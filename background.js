@@ -41,10 +41,12 @@ function isLocalURL(url) {
     // `protocol://user:pass@ [sub.example.tld.] :1234/path/#hash`
     const _hostname = url.hostname;
     // Remove trailing dot on fully qualified domains: https://en.wikipedia.org/wiki/Fully_qualified_domain_name
-    const hostname = _hostname.replace(/\.*$/, '');
+    const hostname = (_hostname.endsWith('.')) ?
+        _hostname.slice(0, -1) :
+        _hostname;
 
     // Extract the TLD (note this doesn't get the *true* TLD since `.co.uk` is captured just as `.uk`)
-    const hostname_dot_chunks = hostname.split('.');
+    const hostname_dot_chunks = hostname.split(".");
     const tld = hostname_dot_chunks.at(-1);
 
     ////////////// Non-IP LAN access
