@@ -45,7 +45,7 @@ export function updateBadges(text, tabId) {
 
 /**
  * Call from a scope which has access to `browser.tabs`
- * @returns {Promise<integer>} The id number of the focused tab
+ * @returns {Promise<number>} The id number of the focused tab
 */
 export async function getActiveTabId() {
     const querying = await browser.tabs.query({
