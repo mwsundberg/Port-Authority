@@ -5,14 +5,12 @@ body {
 h1,
 h2 {
     margin: 0;
+    white-space: nowrap;
 }
 
 /* Header */
 header {
-    margin: 0;
     padding: min(2rem, 20px) min(5ch, 30px);
-    background-color: var(--red);
-    color: var(--background);
 }
 
 header img {
@@ -22,11 +20,16 @@ header img {
     margin-left: -5px;
 }
 
+/* Main section padding */
+main {
+    gap: 10px;
+    padding: 10px 10px;
+}
+
 /* Options */
 #settings {
     text-decoration: none;
     color: var(--foreground);
-    margin: min(0.5rem, 10px) min(1ch, 7px);
 }
 
 #settings h2 {
@@ -40,15 +43,6 @@ header img {
 #settings:hover {
     /* Slightly hacky yet since the img isn't a svg and stylable this is the best way to indicate hover state */
     opacity: 0.75;
-}
-
-/* Switches */
-.switch {
-    padding: min(0.25rem, 7px) min(1ch, 7px);
-}
-
-.slider {
-    margin-inline: min(1ch, 7px);
 }
 
 /* Data populated zones */

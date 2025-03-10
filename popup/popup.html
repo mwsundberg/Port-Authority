@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta name="color-scheme" content="light dark" />
@@ -19,39 +18,41 @@
             Port Authority
         </h1>
     </header>
-    <!-- Settings link -->
-    <nav class="flex-row align-right">
-        <a href="#" id="settings" class="flex-row">
-            <h2 class="inline">
-                Options
-            </h2>
-            <img src="../icons/settings.png" width="24" height="24" alt="Settings Gear" />
-        </a>
-    </nav>
-    <!-- Config switches -->
-    <label class="flex-row switch">
-        <input type="checkbox" id="blocking_switch" />
-        <span class="slider round"></span>
-        Blocking
-    </label>
-    <label class="flex-row switch">
-        <input type="checkbox" id="notifications_switch" />
-        <span class="slider round"></span>
-        Notifications
-    </label>
-    <!-- Drop zones for parsed data -->
-    <section id="blocked_ports" class="unpopulated">
-        <h2>Blocked Port Scans:</h2>
-        <ul class="dropzone selectable">
-            <!-- Inserting data here -->
-        </ul>
-    </section>
-    <section id="blocked_hosts" class="unpopulated">
-        <h2>Blocked Tracking Scripts:</h2>
-        <ul class="dropzone selectable">
-            <!-- Inserting data here -->
-        </ul>
-    </section>
+    <main class="flex-column">
+        <!-- Settings link -->
+        <nav class="flex-row align-right">
+            <a href="#" id="settings" class="flex-row">
+                <h2 class="inline">
+                    Options
+                </h2>
+                <img src="../icons/settings.png" width="24" height="24" alt="Settings Gear" />
+            </a>
+        </nav>
+        <!-- Config switches -->
+        <label class="flex-row switch">
+            <input type="checkbox" id="blocking_switch" />
+            <span class="slider round"></span>
+            Blocking
+        </label>
+        <label class="flex-row switch">
+            <input type="checkbox" id="notifications_switch" />
+            <span class="slider round"></span>
+            Notifications
+        </label>
+        <!-- Drop zones for parsed data -->
+        <section id="blocked_ports" class="unpopulated">
+            <h2>Blocked Port Scans:</h2>
+            <ul class="dropzone selectable">
+                <!-- Inserting data here -->
+            </ul>
+        </section>
+        <section id="blocked_hosts" class="unpopulated">
+            <h2>Blocked Tracking Scripts:</h2>
+            <ul class="dropzone selectable">
+                <!-- Inserting data here -->
+            </ul>
+        </section>
+    </main>
     <script type="module" src="./switch.js"></script>
     <script type="module" src="./PopupUI.js"></script>
 </body>
