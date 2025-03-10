@@ -199,8 +199,7 @@ export async function clearAllInLocal(default_structure = {}) {
 
 /**
  * @param {string} key Used to reference the value in `browser.storage.local` to delete.
- * If no value was stored under `key` will log a warning yet otherwise do nothing, returning `null`.
- * @returns {Promise<any>} Resolves once operation is finished, returning the prior value if present (like `pop()`)
+ * @returns {Promise} Resolves once operation is finished, returning nothing.
  * 
  * @example
  * removeItemInLocal(tab_id);
@@ -213,19 +212,9 @@ export async function clearAllInLocal(default_structure = {}) {
 export async function removeItemInLocal(key) {
     // Acquire lock for write access before clearing
     return navigator.locks.request(STORAGE_LOCK_KEY, async (lock) => {
-        const prior_value = await UNLOCKED_getItemFromLocal(key, null);
-
-        // Check for no value, only continuing if there's an actual value to clear
-        if(prior_value === null) {
-            console.warn("Removing nonexistent storage entry: " + key);
-            return null;
-        }
-
-        await browser.storage.local.remove(key);
-        console.debug("Removing storage value:", {[key]: prior_value});
-
-        // Return the value like `pop()`
-        return prior_value;
+        console.debug("Removing storage value: " + key);
+        
+        return await browser.storage.local.remove(key);
     });
 }
 
