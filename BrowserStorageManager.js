@@ -225,29 +225,26 @@ export async function removeItemInLocal(key) {
  * Adds the host and port of the provided url to a list of hosts and ports that were blocked from port scanning.
  * 
  * @param {URL} url URL object built from the url of the tab associated with the tabID
- * @param {string} tabId Id the of the browser tab the port check was executed in
+ * @param {number} tabId Id the of the browser tab the port check was executed in
  */
-export async function addBlockedPortToHost(url, tabIdString) {
-    const tabId = parseInt(tabIdString);
-    const host = url.host.split(":")[0]; // TODO replace with more robust method to get host, this might act funky around IPv6 addresses
+export async function addBlockedPortToHost(url, tabId) {
+    const host = url.hostname;
     const port = "" + (url.port || getPortForProtocol(url.protocol));
 
     // Grab the blocked ports object from extensions storage
     return modifyItemInLocal("blocked_ports", {}, (blocked_ports) => {
         // Grab the array of ports blocked for the host url
         const tab_hosts = blocked_ports[tabId] || {};
-        let hosts_ports = tab_hosts[host];
-        if (Array.isArray(hosts_ports)) {
-            // Add the port to the array of blocked ports for this host IFF the port doesn't exist
-            if (hosts_ports.indexOf(port) === -1) {
-                hosts_ports = tab_hosts[host].concat([port]);
-                tab_hosts[host] = hosts_ports;
-                blocked_ports[tabId] = tab_hosts;
-            }
-        } else {
-            tab_hosts[host] = [port];
-            blocked_ports[tabId] = tab_hosts;
+        const hosts_ports = tab_hosts[host] || [];
+        
+        // Add the port to the array of blocked ports for this host IFF the port wasn't recorded already
+        if (!hosts_ports.includes(port)) {
+            hosts_ports.push(port);
         }
+
+        tab_hosts[host] = hosts_ports;
+        blocked_ports[tabId] = tab_hosts;
+        
         return blocked_ports;
     });
 }
@@ -256,17 +253,16 @@ export async function addBlockedPortToHost(url, tabIdString) {
  * Adds the host and port of the provided url to a list of hosts and ports that were blocked from port scanning.
  * 
  * @param {URL} url URL object built from the url of the tab associated with the tabID
- * @param {string} tabId Id the of the browser tab the port check was executed in
+ * @param {number} tabId Id the of the browser tab the port check was executed in
  */
-export async function addBlockedTrackingHost(url, tabIdString) {
-    const tabId = parseInt(tabIdString);
-    const host = url.host;
+export async function addBlockedTrackingHost(url, tabId) {
+    const host = url.hostname;
 
     return modifyItemInLocal("blocked_hosts", {}, (blocked_hosts_tabs) => {
-        let blocked_hosts = blocked_hosts_tabs[tabId] || [];
+        const blocked_hosts = blocked_hosts_tabs[tabId] || [];
 
-        if (blocked_hosts.indexOf(host) === -1) {
-            blocked_hosts = blocked_hosts.concat([host]);
+        if (!blocked_hosts.includes(host)) {
+            blocked_hosts.push(host);
         }
 
         blocked_hosts_tabs[tabId] = blocked_hosts;
