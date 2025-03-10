@@ -31,7 +31,7 @@ body {
     color: var(--foreground);
 }
 
-/* General helper classes */
+/* General styling classes */
 .red-bg {
     background-color: var(--red);
     color: var(--background);
@@ -47,6 +47,10 @@ body {
 
 .inline {
     display: inline;
+}
+
+.unpopulated {
+    display: none;
 }
 
 /* Flex-based layout helpers*/

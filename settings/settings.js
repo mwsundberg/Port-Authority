@@ -1,6 +1,40 @@
 import { getItemFromLocal, modifyItemInLocal } from "../global/BrowserStorageManager.js";
 import { extractURLHost } from "../global/utils.js";
 
+/**
+ * A single row in the allowed domain list display
+ * @param {string} domain The raw representation of the domain, used both for display and storage
+ * @returns {Element} `<tr><td>{domain}</td><td><button onclick="remove & refresh display">Remove</button></td></tr>`
+ */
+function allowed_domain_row(domain, abort_signal) {
+    const remove_domain = async () => {
+        // Remove the current domain from the list
+        await modifyItemInLocal("allowed_domain_list", [],
+            (list) => list.filter(
+                (d) => d !== domain
+            ));
+
+        // Refresh the domain list displayed
+        load_allowed_domains();
+    }
+
+    // Build out the DOM for the table row
+    const row = document.createElement("tr");
+
+    const domain_cell = document.createElement("td");
+    domain_cell.innerText = domain;
+    row.appendChild(domain_cell);
+
+    const button_cell = document.createElement("td");
+    const button = document.createElement("button");
+    button.innerText = "Remove";
+    button.addEventListener("click", remove_domain, {signal: abort_signal}); // By triggering `remove_buttons_event_controller.abort()`, all buttons with this signal passed will have their listeners removed
+    button_cell.appendChild(button);
+    row.appendChild(button_cell);
+
+    return row;
+}
+
 let remove_buttons_event_controller;
 async function load_allowed_domains() {
     // Remove all of the stale listeners (might not need this since calling `replaceChildren` should kill all the children's listeners, but better safe than sorry)
@@ -8,38 +42,30 @@ async function load_allowed_domains() {
 
     // Make a new AbortController for all of the fresh buttons
     remove_buttons_event_controller = new AbortController();
-    const signal = remove_buttons_event_controller.signal;
 
-    const allowedDomainsList = await getItemFromLocal(
+    const allowed_domain_list = await getItemFromLocal(
         "allowed_domain_list",
         []
     );
 
-    // Results in a list of `<li>domain.com <button onclick="remove & refresh UI">Remove</button></li>`
-    const domainListDomElements = allowedDomainsList.map((domain) => {
-        const listItem = document.createElement("li");
-        listItem.innerText = domain + " ";
+    // Clear the table
+    const table_body = document.getElementById("allowedDomainsTableContents");
+    table_body?.replaceChildren();
 
-        const button = document.createElement("button");
-        button.innerText = "Remove";
-        button.addEventListener("click", async () => {
-            // Remove the current domain from the list
-            await modifyItemInLocal("allowed_domain_list", [],
-                (list) => list.filter(
-                    (d) => d !== domain
-                ));
+    // If no domains need to be added, hide the table and return early
+    const table = document.getElementById("allowedDomainsTable");
+    if(allowed_domain_list.length === 0) {
+        table?.classList.add("unpopulated");
+        return;
+    } else {
+        table?.classList.remove("unpopulated");
+    }
 
-            // Refresh the domain list displayed
-            load_allowed_domains();
-        }, { signal }); // By triggering `remove_buttons_event_controller.abort()`, all buttons with this signal passed will have their listeners removed
-        listItem.appendChild(button);
-
-        return listItem;
+    // Populate the table rows
+    allowed_domain_list.forEach((domain) => {
+        const new_row = allowed_domain_row(domain, remove_buttons_event_controller.signal);
+        table_body?.appendChild(new_row);
     });
-
-    // Override the old list with the new contents
-    const listContainerElement = document.getElementById("allowedDomainsListID");
-    listContainerElement.replaceChildren(...domainListDomElements);
 }
 
 async function saveOptions(e) {

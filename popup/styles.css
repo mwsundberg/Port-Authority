@@ -44,8 +44,3 @@ a#settings {
     /* Slightly hacky yet since the img isn't a svg and stylable this is the best way to indicate hover state */
     opacity: 0.75;
 }
-
-/* Data populated zones */
-.unpopulated {
-    display: none;
-}

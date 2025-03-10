@@ -18,9 +18,10 @@
         <button type="submit">Save</button>
     </form>
     <br />
-    <p><strong>Domains Allowed to Bypass PortAuthority Blocking:</strong></p>
-    <ul id="allowedDomainsListID">
-    </ul>
+    <table id="allowedDomainsTable" class="unpopulated">
+        <thead><tr><th>Allowed Domains</th></tr></thead>
+        <tbody id="allowedDomainsTableContents"><!-- Dynamically Populated --></tbody>
+    </table>
     <script type="module" src="settings.js"></script>
 </body>
 </html>
