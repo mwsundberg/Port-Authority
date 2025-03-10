@@ -17,19 +17,19 @@ async function startup(){
 
 const oldRegex = new RegExp("\\b(^(http|https|wss|ws|ftp|ftps):\/\/127[.](?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.](?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.](?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|^(http|https|wss|ws|ftp|ftps):\/\/0.0.0.0|^(http|https|wss|ws|ftp|ftps):\/\/(10)([.](25[0-5]|2[0-4][0-9]|1[0-9]{1,2}|[0-9]{1,2})){3}|^(http|https|wss|ws|ftp|ftps):\/\/localhost|^(http|https|wss|ws|ftp|ftps):\/\/172[.](0?16|0?17|0?18|0?19|0?20|0?21|0?22|0?23|0?24|0?25|0?26|0?27|0?28|0?29|0?30|0?31)[.](?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.](?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|^(http|https|wss|ws|ftp|ftps):\/\/192[.]168[.](?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.](?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|^(http|https|wss|ws|ftp|ftps):\/\/169[.]254[.](?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.](?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))(?:\/([789]|1?[0-9]{2}))?\\b", "i");
 /**
- * isLocalURL aims to replace the current Regex based host matching
+ * isLocalURL aims to replace the current RegExp based host matching with a simpler and more comprehensive custom matching algorithm
  * @remarks
- * The js `URL` object applies heavy normalization, so there's no need to worry about:
+ * Passing hosts as `new URL()`s automatically applies heavy normalization so there's no need to worry about:
  *     exotic domain forms like `https://✉.gg`, `https://regular%2Dexpressions.info` (percent-encoding in hostname), `https://はじめよう.みんな`, `https://כולנו.ישראל` (RTL characters (including TLDs)),
- *     exotic IPv4s like `http://127.1`, `http://2130706433`, `http://0x7F000001`, `http://0177.1`,
- *     exotic IPv6s like // TODO
- * ({@link https://developer.mozilla.org/en-US/docs/Web/API/URL/hostname#:~:text=IPv4%20and%20IPv6%20addresses%20are%20normalized%2C%20such%20as%20stripping%20leading%20zeros%2C%20and%20domain%20names%20are%20converted%20to%20IDN | MDN citation})
+ *     exotic IPv4s like `http://127.1`, `http://2130706433`, `http://0x7F000001`, `http://0177.1`
+ *     exotic IPv6s like `http://[ffff::127.0.0.1]`, `http://[0:0:0::1]`, `http://[2001:db8::aaaa:0:0:1]` vs `http://[2001:db8:0:0:aaaa::1]`
+ * (See: {@link https://developer.mozilla.org/en-US/docs/Web/API/URL/hostname#:~:text=IPv4%20and%20IPv6%20addresses%20are%20normalized%2C%20such%20as%20stripping%20leading%20zeros%2C%20and%20domain%20names%20are%20converted%20to%20IDN | MDN quote} on guarantees, and the {@link https://url.spec.whatwg.org/#writing | URL Spec} section on normalizations/formatting)
  * 
  * @param {URL} url
  * @returns {boolean}
  */
 function isLocalURL(url) {
-    if (!(url instanceof URL)) console.warn("Passed non-URL to isLocalURL", {url});
+    if (!(url instanceof URL)) console.error("Passed non-URL to isLocalURL:", {url});
 
     // Catch `file:///` urls
     if (url.protocol === "file:") {
@@ -68,7 +68,7 @@ function isLocalURL(url) {
     }
 
 
-    // Resolve IPv4 via `.in-addr.arpa` or directly parsed
+    // Resolve IPv4 via `.in-addr.arpa` addresses or direct parsing
     const ip4_numeric_chunks = (hostname.endsWith('.in-addr.arpa') ? (
         // Cut the end off and flip since `.in-addr.arpa` displays in little-endian
         hostname_dot_chunks
@@ -77,6 +77,7 @@ function isLocalURL(url) {
     ) : hostname_dot_chunks)
         // Parse as numbers
         .map((b) => parseInt(b));
+    // TODO IPv6 passthrough of IPv4 values: [ffff::...]
 
     ////////////// IPv4
     // Compiled list on Wikipedia: https://en.wikipedia.org/wiki/IPv4#Special-use_addresses
@@ -97,25 +98,37 @@ function isLocalURL(url) {
 
         // Actual matching
         if (
-            // Loopback
-            /* 127.  0.0.0 /8  */ (ip_1 === 127) ||
-            /*   0.  0.0.0 /8  */ (ip_1 === 0) ||
-            // Link-local/mDNS related
+            // Reordered by match complexity (/8s before /32s)
+            /* 127.0.0.0   /8  */ (ip_1 === 127) ||
+            /*   0.0.0.0   /8  */ (ip_1 === 0) ||
+            /*  10.0.0.0   /8  */ (ip_1 === 10) ||
+            /* 192.168.0.0 /16 */ (ip_1 === 192 && ip_2 === 168) ||
             /* 169.254.0.0 /16 */ (ip_1 === 169 && ip_2 === 254) ||
-            /* 224.0.0.251 /32 */ (ip_1 === 224 && ip_2 === 0 && ip_3 === 0 && ip_4 === 251) ||
-            // Private use 
-            /*  10.  0.0.0 /8  */ (ip_1 === 10) ||
             /* 172. 16.0.0 /12 */ (ip_1 === 172 && (ip_2 >= 16 && ip_2 < 32)) ||
-            /* 192.168.0.0 /16 */ (ip_1 === 192 && ip_2 === 168)
+            // Should the mDNS broadcast address be included? It's not public but it's also the only /32 atm
+            /* 224.0.0.251 /32 */ (ip_1 === 224 && ip_2 === 0 && ip_3 === 0 && ip_4 === 251)
         ) {
             console.debug("New matcher IPv4 success: ✔️: '" + hostname + "'");
             return true;
         }
     }
 
-    ////////////// IPv4
+    ////////////// IPv6
+    // Format standardization reference: https://en.wikipedia.org/wiki/IPv6#Address_representation
+    // RFC 5952: 'A Recommendation for IPv6 Address Text Representation' (2010): https://datatracker.ietf.org/doc/html/rfc5952
+
     if (false) {
-        // Link-local/mDNS related: FE80::/10
+        /* Special IPv6 addresses (RFC 4291): https://datatracker.ietf.org/doc/html/rfc4291#section-2.4
+            Unspecified          00...0  (128 bits)   ::/128          2.5.2
+            Loopback             00...1  (128 bits)   ::1/128         2.5.3
+            Multicast            11111111             FF00::/8        2.7
+            Link-Local unicast   1111111010           FE80::/10       2.5.6
+        */
+
+        /* IPv4 embedded in IPv6 (RFC 4291): https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5
+         */
+        /* Multicast IPv6 (RFC 4291): https://datatracker.ietf.org/doc/html/rfc4291#section-2.7
+        */
     }
 
     // Fallback on the regex (with a warning to track down the last cases)
