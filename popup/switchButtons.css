@@ -35,7 +35,7 @@
     height: var(--height);
     width: var(--width);
     margin-inline-end: 8px;
-    background-color: #5e5c5c;
+    background-color: color-mix(in oklab, var(--background) 75%, var(--foreground));
     -webkit-transition: .4s;
     transition: .4s;
 }
@@ -47,7 +47,7 @@
     width: calc(var(--height) - 2 * var(--pill-inset));
     left: var(--pill-inset);
     top: var(--pill-inset);
-    background-color: var(--foreground);
+    background-color: var(--light);
     -webkit-transition: .4s;
     transition: .4s;
 }

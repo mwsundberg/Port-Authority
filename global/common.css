@@ -1,13 +1,17 @@
 :root {
-    --background: #BFBFC9;
-    --foreground: #23222B;
+    --light: #ffffff;
+    --dark: #23222B;
+    --background: var(--light);
+    --foreground: var(--dark);
     --red: #800000;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --background: #23222B;
-        --foreground: #BFBFC9;
+        --light: #BFBFC9;
+        --dark: #23222B;
+        --background: var(--dark);
+        --foreground: var(--light);
         --red: #B20000;
     }
 }
@@ -22,6 +26,8 @@ body {
 
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 15px;
+
+    background-color: var(--background);
     color: var(--foreground);
 }
 
@@ -31,8 +37,7 @@ body {
     color: var(--background);
 }
 .warning-text {
-    /* TODO improve readability */
-    color: var(--red);
+    color: color-mix(in oklab, var(--red) 50%, red);
 }
 
 /* Want to default disallow text selection for things like options labels but selectively enable it for copyable data like banned IPs or the whitelist */

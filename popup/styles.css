@@ -27,7 +27,7 @@ main {
 }
 
 /* Options */
-#settings {
+a#settings {
     text-decoration: none;
     color: var(--foreground);
 }
