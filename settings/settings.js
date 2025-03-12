@@ -22,6 +22,7 @@ function allowed_domain_row(domain, abort_signal) {
     const row = document.createElement("tr");
 
     const domain_cell = document.createElement("td");
+    domain_cell.classList.add("selectable"); // Make sure the domain is selectable for copying
     domain_cell.innerText = domain;
     row.appendChild(domain_cell);
 

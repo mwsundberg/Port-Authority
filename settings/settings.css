@@ -1,0 +1,14 @@
+body {
+    gap: 1rem;
+}
+
+/* Allowlist table */
+#allowedDomainsTable {
+    border-collapse: collapse;
+
+    /* TODO colors */
+    border: 2px solid red;
+}
+th, td {
+    border: 1px solid lime;
+}

@@ -8,16 +8,17 @@
     <title>Port Authority</title>
 
     <link rel="stylesheet" type="text/css" href="../global/common.css">
+    <link rel="stylesheet" type="text/css" href="./settings.css">
 </head>
 
-<body>
-    <p class="warning-text"><strong>Make sure you enter a proper domain name (ebay.com)</strong></p>
+<body class="flex-column">
+    
     <form>
-        <label>Add new domain:</label>
-        <input type="text" required id="add_domain">
+        <p class="warning-text"><strong>Make sure you enter a proper domain name</strong></p>
+        <label for="add_domain">Add new domain: </label>
+        <input type="text" id="add_domain" required placeholder="ebay.com (example)">
         <button type="submit">Save</button>
     </form>
-    <br />
     <table id="allowedDomainsTable" class="unpopulated">
         <thead><tr><th>Allowed Domains</th></tr></thead>
         <tbody id="allowedDomainsTableContents"><!-- Dynamically Populated --></tbody>
