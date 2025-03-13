@@ -51,21 +51,21 @@ async function load_allowed_domains() {
 
     // Clear the table
     const table_body = document.getElementById("allowedDomainsTableContents");
-    table_body?.replaceChildren();
+    table_body.replaceChildren();
 
     // If no domains need to be added, hide the table and return early
     const table = document.getElementById("allowedDomainsTable");
     if(allowed_domain_list.length === 0) {
-        table?.classList.add("unpopulated");
+        table.classList.add("unpopulated");
         return;
     } else {
-        table?.classList.remove("unpopulated");
+        table.classList.remove("unpopulated");
     }
 
     // Populate the table rows
     allowed_domain_list.forEach((domain) => {
         const new_row = allowed_domain_row(domain, remove_buttons_event_controller.signal);
-        table_body?.appendChild(new_row);
+        table_body.appendChild(new_row);
     });
 }
 
@@ -98,4 +98,4 @@ async function saveOptions(e) {
 }
 
 load_allowed_domains();
-document.getElementById("allowlist_add_form")?.addEventListener("submit", saveOptions);
+document.getElementById("allowlist_add_form").addEventListener("submit", saveOptions);
