@@ -26,18 +26,21 @@ main {
     padding: 10px 10px;
 }
 
-/* Options */
-a#settings {
+/* Options link */
+#settings {
+    font-weight: bold;
+    font-size: 1.25rem;
+
+    /* <a> resets */
     text-decoration: none;
     color: var(--foreground);
 }
-
-#settings h2 {
-    font-size: 1.25rem;
+#settings:hover, #settings:focus {
+    opacity: 0.75;
 }
 
+/* Adding the gear icon in a way that is easy to recolor */
 #settings::after {
-    /* Hacky-ish way to add the gear icon in a way that is easy to recolor */
     content: '';
 
     /* Position and sizing */
@@ -46,14 +49,10 @@ a#settings {
     height: 24px;
     width: 24px;
 
-    /* Actual color */
-    background-color: var(--foreground);
+    /* `currentColor` matches the `color` property's value */
+    background-color: currentColor;
 
     /* Make it gear shaped */
     mask-image: url("../icons/settings.png");
     mask-size: 100%;
-}
-
-#settings:hover {
-    opacity: 0.75;
 }
