@@ -40,7 +40,7 @@ body {
     color: color-mix(in oklab, var(--red) 50%, red);
 }
 
-/* Want to default disallow text selection for things like options labels but selectively enable it for copyable data like banned IPs or the whitelist */
+/* Want to default disallow text selection for things like options labels but selectively enable it for copyable data like banned IPs or the allowlist */
 .selectable {
     user-select: text;
 }

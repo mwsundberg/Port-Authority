@@ -13,14 +13,19 @@
 
 <body class="flex-column">
     
-    <form>
-        <p class="warning-text"><strong>Make sure you enter a proper domain name</strong></p>
-        <label for="add_domain">Add new domain: </label>
+    <form id="allowlist_add_form">
+        <h2>Domain Allowlist</h2>
+        <p>
+            Selectively disable Port Authority on some websites by adding them to the allowlist below.
+            <strong class="warning-text">Make sure you enter a proper domain name.</strong>
+        </p>
+        <label for="add_domain">Allow new domain: </label>
         <input type="text" id="add_domain" required placeholder="ebay.com (example)">
-        <button type="submit">Save</button>
+        <button type="submit">Add</button>
     </form>
+    
     <table id="allowedDomainsTable" class="unpopulated">
-        <thead><tr><th>Allowed Domains</th></tr></thead>
+        <thead><tr><th colspan="2">Allowed Domains</th></tr></thead>
         <tbody id="allowedDomainsTableContents"><!-- Dynamically Populated --></tbody>
     </table>
     <script type="module" src="settings.js"></script>

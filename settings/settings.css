@@ -4,6 +4,8 @@ body {
 
 /* Allowlist table */
 #allowedDomainsTable {
+    width: max-content;
+    max-width: 100%;
     border-collapse: collapse;
 
     /* TODO colors */
@@ -11,4 +13,5 @@ body {
 }
 th, td {
     border: 1px solid lime;
+    width: max-content;
 }

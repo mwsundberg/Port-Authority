@@ -70,6 +70,9 @@ async function load_allowed_domains() {
 }
 
 async function saveOptions(e) {
+    // Prevent the form submit event from reloading the page
+    e.preventDefault();
+
     let url;
     try {
         url = extractURLHost(e.target[0].value);
@@ -89,7 +92,10 @@ async function saveOptions(e) {
                 return list;
             }
         });
+
+    // Refresh the table since no longer relying on the form submitting to reload the page
+    load_allowed_domains();
 }
 
 load_allowed_domains();
-document.querySelector("form").addEventListener("submit", saveOptions);
+document.getElementById("allowlist_add_form")?.addEventListener("submit", saveOptions);
