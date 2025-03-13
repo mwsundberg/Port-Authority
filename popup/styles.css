@@ -36,11 +36,24 @@ a#settings {
     font-size: 1.25rem;
 }
 
-#settings img {
+#settings::after {
+    /* Hacky-ish way to add the gear icon in a way that is easy to recolor */
+    content: '';
+
+    /* Position and sizing */
     margin-left: 2.5px;
+    margin-bottom: -5px;
+    height: 24px;
+    width: 24px;
+
+    /* Actual color */
+    background-color: var(--foreground);
+
+    /* Make it gear shaped */
+    mask-image: url("../icons/settings.png");
+    mask-size: 100%;
 }
 
 #settings:hover {
-    /* Slightly hacky yet since the img isn't a svg and stylable this is the best way to indicate hover state */
     opacity: 0.75;
 }
