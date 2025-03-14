@@ -4,6 +4,7 @@ import { extractURLHost } from "../global/utils.js";
 /**
  * A single row in the allowed domain list display
  * @param {string} domain The raw representation of the domain, used both for display and storage
+ * @param {AbortSignal} abort_signal Signal to disable the 'remove' button
  * @returns {Element} `<tr><td>{domain}</td><td><button onclick="remove & refresh display">Remove</button></td></tr>`
  */
 function allowed_domain_row(domain, abort_signal) {
@@ -22,13 +23,15 @@ function allowed_domain_row(domain, abort_signal) {
     const row = document.createElement("tr");
 
     const domain_cell = document.createElement("td");
-    domain_cell.classList.add("selectable"); // Make sure the domain is selectable for copying
+    domain_cell.classList.add("selectable", "domain-cell"); // Make sure the domain is selectable for copying
     domain_cell.innerText = domain;
     row.appendChild(domain_cell);
 
     const button_cell = document.createElement("td");
+    button_cell.classList.add("controls-cell");
     const button = document.createElement("button");
-    button.innerText = "Remove";
+    button.innerText = "✕";
+    button.ariaLabel = `Remove '${domain}' from allowlist`;
     button.addEventListener("click", remove_domain, {signal: abort_signal}); // By triggering `remove_buttons_event_controller.abort()`, all buttons with this signal passed will have their listeners removed
     button_cell.appendChild(button);
     row.appendChild(button_cell);
@@ -81,6 +84,8 @@ async function saveOptions(e) {
         alert("Please enter a valid domain.");
         return;
     }
+    document.getElementById("add_domain").value = "";
+
 
     await modifyItemInLocal("allowed_domain_list", [],
         (list) => {

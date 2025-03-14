@@ -4,14 +4,33 @@ body {
 
 /* Allowlist table */
 #allowedDomainsTable {
-    width: max-content;
-    max-width: 100%;
     border-collapse: collapse;
-
-    /* TODO colors */
-    border: 2px solid red;
 }
-th, td {
-    border: 1px solid lime;
-    width: max-content;
+#allowedDomainsTable tr {
+    border: 1px solid color-mix(in oklab, var(--background) 80%, var(--foreground));
+}
+#allowedDomainsTableContents tr:nth-child(odd) {
+    background-color: color-mix(in oklab, var(--background) 95%, var(--foreground));
+}
+#allowedDomainsTableContents tr:hover {
+    background-color: color-mix(in oklab, var(--background) 80%, deepskyblue);
+}
+#allowedDomainsTableContents td {
+    padding: 0.25em;
+}
+#allowedDomainsTableContents .controls-cell {
+    width: 0; /* TODO find a better way to indicate column should be shrink-wrapped to end */
+}
+
+/* Remove domain from allowlist button */
+#allowedDomainsTableContents .controls-cell button {
+    background: color-mix(in oklab, var(--background) 85%, var(--foreground));;
+    border: none;
+    border-radius: 3em;
+    width: 1.5em;
+    height: 1.5em;
+}
+#allowedDomainsTableContents .controls-cell button:hover {
+    background-color: color-mix(in oklab, var(--red) 50%, red);
+    color: var(--background);
 }
