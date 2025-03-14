@@ -22,3 +22,6 @@ notifications_switch.addEventListener("change", (ev) =>
         type: 'setNotificationsAllowed',
         value: ev.target.checked
     }));
+
+// Clear the loading class that was disabling the slider animations when we were setting the initial values
+setTimeout(()=>document.body.classList.remove('loading'), 5);

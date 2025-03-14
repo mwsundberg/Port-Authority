@@ -36,10 +36,9 @@
     width: var(--width);
     margin-inline-end: 8px;
     background-color: color-mix(in oklab, var(--background) 75%, var(--foreground));
-    -webkit-transition: .4s;
-    transition: .4s;
-}
 
+    transition: background-color .4s;
+}
 .slider::after {
     position: absolute;
     content: "";
@@ -48,25 +47,25 @@
     left: var(--pill-inset);
     top: var(--pill-inset);
     background-color: var(--light);
-    -webkit-transition: .4s;
-    transition: .4s;
+
+    transition: transform .4s;
 }
 
-:root.loading .slider, :root.loading .slider::after {
-  -webkit-transition: none;
+body.loading .slider,
+body.loading .slider::after {
   transition: none;
 }
 
-input:checked + .slider {
+/* Transformed state */
+.switch input:checked + .slider {
     background-color: var(--red);
+}
+.switch input:checked + .slider::after {
+    transform: translateX(calc(var(--width) - var(--height)));
 }
 
 input:focus + .slider {
-    box-shadow: 0 0 1px var(--red);
-}
-
-input:checked + .slider::after {
-    transform: translateX(calc(var(--width) - var(--height)));
+  box-shadow: 0 0 1px var(--red);
 }
 
 /* Rounded sliders */
