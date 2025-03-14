@@ -1,27 +1,31 @@
+import { getItemFromLocal, setItemInLocal } from "../global/BrowserStorageManager.js";
+
 // Can attach options page link instantly
 document.getElementById('settings').addEventListener("click", () =>
     browser.runtime.openOptionsPage());
 
-// Await at the top level to prevent attaching listeners that won't match storage state
-const fetched_settings = await browser.runtime.sendMessage({ type: 'popupInit' });
+// Blocking switch bindings (handled with `.then()` to allow for parallel setup of notifications switch)
+getItemFromLocal("blocking_enabled", true).then((blocking_enabled) => {
+    const blocking_switch = document.getElementById("blocking_switch");
 
-// Blocking switch bindings
-const blocking_switch = document.getElementById("blocking_switch");
-blocking_switch.checked = fetched_settings.isListening;
-blocking_switch.addEventListener("change", (ev) =>
-    browser.runtime.sendMessage({
-        type: 'toggleEnabled',
-        value: ev.target.checked
-    }));
+    blocking_switch.checked = blocking_enabled;
+    blocking_switch.addEventListener("change", (ev) =>
+        browser.runtime.sendMessage({
+            type: 'toggleEnabled',
+            value: ev.target.checked
+        }));
+});
 
 // Notifications switch bindings
-const notifications_switch = document.getElementById("notifications_switch");
-notifications_switch.checked = fetched_settings.notificationsAllowed;
-notifications_switch.addEventListener("change", (ev) =>
-    browser.runtime.sendMessage({
-        type: 'setNotificationsAllowed',
-        value: ev.target.checked
-    }));
+getItemFromLocal("notificationsAllowed", true).then((notificationsAllowed) => {
+    const notifications_switch = document.getElementById("notifications_switch");
+
+    notifications_switch.checked = notificationsAllowed;
+    notifications_switch.addEventListener("change", (ev) =>
+        setItemInLocal("notificationsAllowed", ev.target.checked)
+    );
+});
+
 
 // Clear the loading class that was disabling the slider animations when we were setting the initial values
 setTimeout(()=>document.body.classList.remove('loading'), 5);
