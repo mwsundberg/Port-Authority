@@ -40,8 +40,11 @@ function allowed_domain_row(domain, abort_signal) {
 }
 
 let remove_buttons_event_controller;
+const table_body = document.getElementById("allowedDomainsTableContents");
+const table = document.getElementById("allowedDomainsTable");
 async function load_allowed_domains() {
-    // Remove all of the stale listeners (might not need this since calling `replaceChildren` should kill all the children's listeners, but better safe than sorry)
+    // Remove all of the stale listeners
+    // TODO figure out if this all is needed, unsure since calling `replaceChildren` might or might not do listener cleanup on the deleted children
     if (remove_buttons_event_controller) remove_buttons_event_controller.abort();
 
     // Make a new AbortController for all of the fresh buttons
@@ -52,24 +55,24 @@ async function load_allowed_domains() {
         []
     );
 
-    // Clear the table
-    const table_body = document.getElementById("allowedDomainsTableContents");
+    // Clear stale contents, if any
     table_body.replaceChildren();
 
-    // If no domains need to be added, hide the table and return early
-    const table = document.getElementById("allowedDomainsTable");
+    // Early return, hiding wrapper if no data provided
     if(allowed_domain_list.length === 0) {
         table.classList.add("unpopulated");
         return;
-    } else {
-        table.classList.remove("unpopulated");
     }
 
     // Populate the table rows
-    allowed_domain_list.forEach((domain) => {
+    for(const domain of allowed_domain_list) {
         const new_row = allowed_domain_row(domain, remove_buttons_event_controller.signal);
+
         table_body.appendChild(new_row);
-    });
+    };
+
+    // Toggle visibility on the container wrapper at end
+    table.classList.remove("unpopulated");
 }
 
 async function saveOptions(e) {

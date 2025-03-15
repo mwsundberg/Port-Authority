@@ -18,10 +18,32 @@ export function extractURLHost(text) {
 }
 
 /**
- * 
+ * Object-specific empty check
  * @param {Object} object
  * @returns {boolean} 
  */
 export function isObjectEmpty(object) {
     return Object.keys(object).length === 0;
+}
+
+/**
+ * Check if a value is "empty".
+ * 
+ * `0` and `false` *aren't* considered empty.
+ * 
+ * Nullish values, empty strings, and empty `Set`s are considered empty.
+ * @param {any} value 
+ * @returns {boolean} 
+ */
+export function isEmptyValue(value) {
+    // Sets seem empty when treated as objects
+    if(value instanceof Set && value.size !== 0) return false;
+
+    // Main check
+    return (
+        (value === undefined) ||
+        (value === null) ||
+        (value === "") ||
+        (typeof value === "object" && isObjectEmpty(value)) // Also catches empty arrays and Sets
+    );
 }
