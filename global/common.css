@@ -61,7 +61,7 @@ body {
     align-items: center;
 }
 
-.flex-flip {
+.flex-row-flipped {
     display: flex;
     flex-direction: row-reverse;
 }

@@ -38,13 +38,16 @@
             Notifications
         </label>
         <!-- Drop zones for parsed data -->
-        <section id="blocked_ports" class="unpopulated">
+        <section id="blocked-ports" class="unpopulated">
             <h2>Blocked Port Scans:</h2>
-            <ul class="dropzone selectable">
-                <!-- Inserting data here -->
-            </ul>
+            <table>
+                <thead><tr><th>Local Domain</th><th>Port(s)</th></tr></thead>
+                <tbody class="dropzone selectable">
+                    <!-- Dynamically Populated -->
+                </tbody>
+            </table>
         </section>
-        <section id="blocked_hosts" class="unpopulated">
+        <section id="blocked-hosts" class="unpopulated">
             <h2>Blocked Tracking Scripts:</h2>
             <ul class="dropzone selectable">
                 <!-- Inserting data here -->

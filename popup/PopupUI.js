@@ -2,34 +2,114 @@ import { getItemFromLocal } from "../global/BrowserStorageManager.js";
 import { isObjectEmpty } from "../global/utils.js";
 import { getActiveTabId } from "../global/browserActions.js";
 
-function buildSectionWrapper() {
-    return document.createElement("div");
-}
-
 /**
- * Collapsing container component
- * <details>
- *     <summary>${collapse_title}</summary>
- *     <!--add here-->
- * </details>
- *
- * @param {string} summary_contents What's not collapsed
- * @returns {Element} A collapse Wrapper with a button to toggle the collapse
+ * A row in the popup display for "Blocked Port Scans"
+ * @param {string} domain The LAN domain/IP that was accessed
+ * @param {string[]} ports Which port(s) were scanned. Still handled properly if no ports are provided, yet bad practice
+ * @returns {Element} A table row with one of the following structures
+ * 
+ * 
+ * **Multiple ports on the same domain:**
+ * 
+ * *Note that the expansion/collapsing of the ports list is handled purely in CSS, using logic similar to `switchButton.css`.*
+ * ```html
+ * <tr>
+ *     <td class="domain-cell">{domain}</td>
+ *     <td class="ports-cell flex-row-flipped">
+ *         <input type="checkbox" class="ports-expansion-toggle" aria-label="Toggle ports list expansion">
+ *         <span class="many-ports ports-expansion-target">
+ *             <span>{ports[0]}</span><!-- whitespace -->
+ *             <span>{ports[1]}</span><!-- whitespace -->
+ *             <span>{...}</span><!-- whitespace still added on last item, not strictly neccessary since gap before checkbox is added with `flex-gap` -->
+ *         </span>
+ *     </td>
+ * </tr>
+ * ```
+ * 
+ * **One port:**
+ * ```html
+ * <tr>
+ *     <td class="domain-cell">{domain}</td>
+ *     <td class="ports-cell one-port">
+ *         {ports[0]}
+ *     </td>
+ * </tr>
+ * ```
+ * 
+ * **No ports provided (will `console.warn` too):**
+ * ```html
+ * <tr>
+ *     <td class="domain-cell">{domain}</td>
+ *     <!-- No `<td>` for the ports, intentionally -->
+ * </tr>
+ * ```
  */
-function buildCollapseWrapperAndToggle(summary_contents) {
-    const container = document.createElement("details");
-    const summary = document.createElement("summary");
-    // TODO handle nodes rather than text
-    summary.innerText = summary_contents;
-    container.appendChild(summary);
+function buildBlockedPortsRow(domain, ports) {
+    const row = document.createElement("tr");
 
-    return container;
+    // Domain table cell
+    const domainCell = document.createElement("td");
+    domainCell.classList.add("domain-cell");
+    domainCell.innerText = domain;
+    row.appendChild(domainCell);
+
+    // No ports case: return early
+    if (ports.length === 0) {
+        console.warn("No port supplied rendering blocked portscans for '" + domain + "'");
+
+        return row;
+    }
+
+    // Common `td.ports-cell` construction
+    const portsCell = document.createElement("td");
+    portsCell.classList.add("ports-cell");
+    row.appendChild(portsCell);
+
+    // One port: `<td class="ports-cell one-port">{port}</td>`
+    if (ports.length === 1) {
+        portsCell.classList.add("one-port");
+        portsCell.innerText = ports[0];
+
+        return row;
+    }
+
+    // Multiple ports: see JSDoc for full structure
+    // Flip display order so the toggle to expand the ports list shows last
+    portsCell.classList.add("flex-row-flipped");
+
+    // Expansion toggle: `<input type="checkbox" class="ports-expansion-toggle" aria-label="Toggle ports list expansion">`
+    // Comes first in DOM yet visually placed after the ports list
+    // The "`<label>`" text is added with `input::after` since need to change what's shown ("+" or "-") based on `input:checked` status
+    const expansionToggle = document.createElement("input");
+    expansionToggle.setAttribute("type", "checkbox");
+    expansionToggle.classList.add("ports-expansion-toggle");
+    expansionToggle.ariaLabel = "Toggle ports list expansion";
+    portsCell.appendChild(expansionToggle);
+
+    // Expandable container: `<span class="many-ports ports-expansion-target">` with `<span>{port[i]}</span>{ }` children
+    const portsContainer = document.createElement("span");
+    portsContainer.classList.add("many-ports", "ports-expansion-target");
+    for (const p of ports) {
+        const span = document.createElement("span");
+        span.innerText = p;
+        
+        portsContainer.appendChild(span);
+        // Adding a space after for text copyability and improved appearance when collapsed
+        portsContainer.appendChild(document.createTextNode(" "));
+    }
+    portsCell.appendChild(portsContainer);
+
+    // Row finally fully populated
+    return row;
 }
 
 /**
  * Data fetching only, separated from rendering
+ * @param {"blocked_ports" | "blocked_hosts"} data_type Which storage key to extract the blocking activity data from
+ * 
+ * // TODO rework this when flipping data structure as discussed in issue #47: https://github.com/ACK-J/Port_Authority/issues/47
  */
-async function getCurrentTabsBlockedPorts(data_type) {
+async function getCurrentTabsBlockingData(data_type) {
     const all_tabs_data = await getItemFromLocal(data_type, {});
     if (isObjectEmpty(all_tabs_data)) return;
 
@@ -40,48 +120,37 @@ async function getCurrentTabsBlockedPorts(data_type) {
 /**
  * Displays a list of blocked ports in the popup UI.
  * Data is re-rendered each time the popup is opened.
+ * // TODO live re-rendering on data change, related to issue #50: https://github.com/ACK-J/Port_Authority/issues/50
  */
-const blocked_ports_display = document.getElementById("blocked_ports");
-const blocked_ports_inner = document.querySelector("#blocked_ports .dropzone");
+const blockedPortsWrapper = document.getElementById("blocked-ports");
+const blockedPortsContents = blockedPortsWrapper.querySelector(".dropzone");
 async function renderBlockedPorts() {
-    const data_blocked_ports = await getCurrentTabsBlockedPorts("blocked_ports");
-    if(!data_blocked_ports) return;
-    console.log("Ports data: ", data_blocked_ports)
+    const blockedPortsList = await getCurrentTabsBlockingData("blocked_ports");
 
-    const hosts = Object.keys(data_blocked_ports);
+    // Clear stale contents, if any
+    blockedPortsContents.replaceChildren()
 
-    // Build a tree for each host that was blocked
-    for (let i_host = 0; i_host < hosts.length; i_host++) {
-        // Build the wrapper for displaying the host name and ports blocked
-        const host = hosts[i_host];
-        const host_wrapper = buildCollapseWrapperAndToggle(
-            host + " View Ports"
-        );
+    // Early return, hiding wrapper if no data provided
+    if(!blockedPortsList) {
+        blockedPortsWrapper.classList.add("unpopulated");
+        return;
+    };
 
-        const ports = data_blocked_ports[host];
-        const hosts_ul = document.createElement('ul')
+    // Populate the table rows
+    for(const domain in blockedPortsList) {
+        const newRow = buildBlockedPortsRow(domain, blockedPortsList[domain]);
 
-        // Add each port to the HTML
-        for (let i_port = 0; i_port < ports.length; i_port++) {
-            const port = ports[i_port];
-            const port_element = document.createElement("div");
-            port_element.innerText = port;
-            port_element.classList.add("ps-2");
-            hosts_ul.appendChild(port_element);
-        }
-
-        host_wrapper.appendChild(hosts_ul);
-        blocked_ports_inner.appendChild(host_wrapper);
+        blockedPortsContents.appendChild(newRow);
     }
 
     // Toggle visibility on the container wrapper at end
-    blocked_ports_display.classList.remove("unpopulated");
+    blockedPortsWrapper.classList.remove("unpopulated");
 }
 
-const blocked_hosts_display = document.getElementById("blocked_hosts");
-const blocked_hosts_inner = document.querySelector("#blocked_hosts .dropzone");
+const blocked_hosts_display = document.getElementById("blocked-hosts");
+const blocked_hosts_inner = blocked_hosts_display.querySelector(".dropzone");
 async function updateBlockedHostsDisplay() {
-    const data_blocked_hosts = await getCurrentTabsBlockedPorts("blocked_hosts");
+    const data_blocked_hosts = await getCurrentTabsBlockingData("blocked_hosts");
     if(!data_blocked_hosts) return;
     console.log("Hosts data: ", data_blocked_hosts)
 
