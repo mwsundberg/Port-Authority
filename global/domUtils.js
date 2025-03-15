@@ -22,7 +22,7 @@ export function createElement(tag, props, contents) {
     const el = document.createElement(tag);
 
     // Attributes, if provided
-    if(props) {
+    if(props && !isObjectEmpty(props)) {
         for(let p in props) {
             // Value stringification
             let value = props[p];
@@ -46,89 +46,98 @@ export function createElement(tag, props, contents) {
 }
 
 /**
- * @template T
- * @overload
- * @param {Element} dataContainerElement
- * @param {()=>Array<T>} dataFetcher A function that returns an array to render
- * @param {(arrayVal: T)=>Node} dataRenderer How to render an item of the data returned
- * @param {Element} [wrapperElement]
- * @returns {()=>Promise<void>}
+ * Arguments type for {@linkcode renderArrayFactory}
+ * @template T Specifies the array contents' type
+ * @typedef {Object} RenderArrayFactoryArgs
+ * @property {Element} destination Where to insert the HTML representation of the data
+ * @property {Element} [wrapper=destination] Other HTML that should be conditionally hidden if `fetchData()` returns nothing. Defaults to `destination`
+ * @property {()=>(Array<T>|Promise<Array<T>>)} fetchData A function that returns an array to render. `async` accepted too
+ * @property {(item: T)=>(Node|string)} [renderItem=(item)=>item.toString()] How to render a single item of the data array. Defaults to calling `.toString()`
  */
 /**
- * @template T
- * @overload
- * @param {Element} dataContainerElement
- * @param {()=>Record<string, T>} dataFetcher A function that returns an object to render
- * @param {(key: string, value: T)=>Node} dataRenderer How to render a key-value pair of the data returned
- * @param {Element} [wrapperElement]
- * @returns {()=>Promise<void>}
+ * Constructs a render function for rendering data in array format to HTML. If passed `destination` or `wrapper` elements already in the document will update the values there
+ * @template T Specifies the array contents' type
+ * @param {RenderArrayFactoryArgs<T>} args Arguments passed via object notation for clarity and ordering convenience. See {@linkcode RenderArrayFactoryArgs} for specifics
+ * @returns {()=>Promise<void>} A function that will render the provided data to HTML
  */
-/**
- * @overload
- * @param {Element} dataContainerElement
- * @param {()=>any} dataFetcher A function that returns the data to render 
- * @param {(stringifyable: any)=>Node} [dataRenderer] How to render the data. Optional, will insert `toString()`'s results if not provided
- * @param {Element} [wrapperElement]
- * @returns {()=>Promise<void>}
- */
-/**
- * @template T
- * @param {Element} dataContainerElement Where to insert the HTML representation of the data
- * @param {(()=>Array<T>) | (()=>Record<string, T>) | (()=>any)} dataFetcher A function that returns the data to render, accepting either an array, object, or `.toString()` compatible value
- * @param {((arrayVal: T)=>Node) | ((key: string, value: T)=>Node) | ((stringifyable: any)=>Node)} [dataRenderer] How to render the data, single items if passed an array or object. Optional, will insert `toString()`'s results if not provided
- * @param {Element} [wrapperElement] Other HTML that should be conditionally hidden if `dataFetcher` returns nothing. If not provided defaults to `dataContainerElement`
- * @returns {()=>Promise<void>} Returns an `async` function to allow for parallel execution (except not really since JS is single-threaded)
- */
-export function updateDataDisplayFactory(
-    dataContainerElement,
-    dataFetcher,
-    dataRenderer = (...data) => document.createTextNode(data.toString()),
-    wrapperElement = dataContainerElement) {
-    // TODO Improve type narrowing and `@overload` handling, currently have several type errors when checking with `ts-check`
+export function renderArrayFactory({
+    destination,
+    wrapper = destination,
+    fetchData,
+    // @ts-ignore (`.toString()` complaining)
+    renderItem = (item) => item.toString()
+}) {
     return async () => {
         // Clear stale contents
-        dataContainerElement.replaceChildren();
+        destination.replaceChildren();
 
-        // Fetch the data and identify its type
-        const data = dataFetcher();
-        const dataType = Array.isArray(data) ? 'array' : typeof data;
+        // Fetch the data to render
+        const data = await fetchData();
+
+        // Early return, hiding wrapper if data is empty
+        if (data.length === 0) {
+            wrapper.classList.add("unpopulated");
+            return;
+        }
 
         // Populate the data container in DOM
-        if (dataType === "array") {
-            // Early return, hiding wrapper if data is empty
-            if (data.length === 0) {
-                wrapperElement.classList.add("unpopulated");
-                return;
-            }
-            
-            for (const item of data) {
-                dataContainerElement.append(
-                    dataRenderer(item)
-                );
-            }
-        } else if (dataType === "object") {
-            // Early return, hiding wrapper if data is empty
-            if(isObjectEmpty(data)) {
-                wrapperElement.classList.add("unpopulated");
-                return;
-            }
-
-            for (const key in data) {
-                dataContainerElement.append(
-                    dataRenderer(key, data[key])
-                );
-            }
-        } else {
-            // Early return, hiding wrapper if data is empty
-            if(isEmptyValue(data)) {
-                wrapperElement.classList.add("unpopulated");
-                return;
-            }
-
-            dataContainerElement.append(dataRenderer(data));
+        for (const d of data) {
+            destination.append(
+                renderItem(d)
+            );
         }
 
         // Toggle visibility on the container wrapper after populating the data
-        wrapperElement.classList.remove("unpopulated");
+        wrapper.classList.remove("unpopulated");
+    };
+}
+
+/**
+ * Arguments type for {@linkcode renderObjectFactory}
+ * @template {string | number | symbol} K The object-to-render's key types
+ * @template V The object-to-render's value types
+ * @typedef {Object} RenderObjectFactoryArgs
+ * @property {Element} destination Where to insert the HTML representation of the data
+ * @property {Element} [wrapper=destination] Other HTML that should be conditionally hidden if `fetchData()` returns nothing. Defaults to `destination`
+ * @property {()=>(Record<K, V>|Promise<Record<K, V>>)} fetchData A function that returns data to render in object form. `async` accepted too
+ * @property {(key: K, value: V)=>(Node|string)} [renderItem=(key, value)=>(key.toString() + " " + value.toString())] How to render a single item of the data array. Defaults to calling `.toString()`
+ */
+/**
+ * Constructs a render function for rendering data in `Object` format to HTML. If passed `destination` or `wrapper` elements already in the document will update the values there
+ * @template {string | number | symbol} K The object-to-render's key type
+ * @template V The object-to-render's value type
+ * @param {RenderObjectFactoryArgs<K, V>} args Arguments passed via object notation for clarity and ordering convenience. See {@linkcode RenderObjectFactoryArgs} for specifics
+ * @returns {()=>Promise<void>} A function that will render the provided data to HTML
+ */
+export function renderObjectFactory({
+    destination,
+    wrapper = destination,
+    fetchData,
+    // @ts-ignore (`.toString()` complaining)
+    renderItem = (key, value) => (key.toString() + " " + value.toString())
+}) {
+    return async () => {
+        // Clear stale contents
+        destination.replaceChildren();
+
+        // Fetch the data to render
+        const data = await fetchData();
+
+        // Early return, hiding wrapper if data is empty
+        if (isObjectEmpty(data)) {
+            wrapper.classList.add("unpopulated");
+            return;
+        }
+
+        // Populate the data container in DOM
+        for (const key in data) {
+            // Using `.append` to also accept strings
+            destination.append(
+                renderItem(key, data[key])
+            );
+        }
+
+        // Toggle visibility on the container wrapper after populating the data
+        wrapper.classList.remove("unpopulated");
     };
 }
