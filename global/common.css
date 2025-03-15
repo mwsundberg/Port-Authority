@@ -42,6 +42,9 @@ body {
 .selectable {
     user-select: text;
 }
+.selectable .unselectable {
+    user-select: none;
+}
 
 .inline {
     display: inline;

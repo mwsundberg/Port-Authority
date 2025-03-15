@@ -1,11 +1,24 @@
 import { getItemFromLocal, modifyItemInLocal } from "../global/BrowserStorageManager.js";
+import { createElement } from "../global/domUtils.js";
 import { extractURLHost } from "../global/utils.js";
 
 /**
  * A single row in the allowed domain list display
  * @param {string} domain The raw representation of the domain, used both for display and storage
  * @param {AbortSignal} abort_signal Signal to disable the 'remove' button
- * @returns {Element} `<tr><td>{domain}</td><td><button onclick="remove & refresh display">Remove</button></td></tr>`
+ * @returns {Element}
+ * ```html
+ * <tr>
+ *     <td class="domain-cell">{domain}</td>
+ *     <td class="controls-cell">
+ *         <button onclick="{remove & refresh display}"
+ *                 class="unselectable"
+ *                 aria-label="Remove {domain} from allowlist">
+ *             ✕
+ *         </button>
+ *     </td>
+ * </tr>
+ * ```
  */
 function allowed_domain_row(domain, abort_signal) {
     const remove_domain = async () => {
@@ -22,19 +35,18 @@ function allowed_domain_row(domain, abort_signal) {
     // Build out the DOM for the table row
     const row = document.createElement("tr");
 
-    const domain_cell = document.createElement("td");
-    domain_cell.classList.add("selectable", "domain-cell"); // Make sure the domain is selectable for copying
-    domain_cell.innerText = domain;
-    row.appendChild(domain_cell);
+    // Domain cell: `<td class="domain-cell selectable">{domain}</td>`
+    const domainCell = createElement("td", {class: "domain-cell"}, domain);
+    row.appendChild(domainCell);
 
-    const button_cell = document.createElement("td");
-    button_cell.classList.add("controls-cell");
-    const button = document.createElement("button");
-    button.innerText = "✕";
-    button.ariaLabel = `Remove '${domain}' from allowlist`;
-    button.addEventListener("click", remove_domain, {signal: abort_signal}); // By triggering `remove_buttons_event_controller.abort()`, all buttons with this signal passed will have their listeners removed
-    button_cell.appendChild(button);
-    row.appendChild(button_cell);
+    const controlsCell = createElement("td", {class: "controls-cell"});
+
+    // Remove domain button: `<button class="unselectable" aria-label="Remove {domain} from allowlist">✕</button>`
+    // Note that `.unselectable` is applied to escape the selectable effect applied at the `<tbody>` level
+    const removeButton = createElement("button", {class: "unselectable", "aria-label": `Remove '${domain}' from allowlist`}, "✕");
+    removeButton.addEventListener("click", remove_domain, {signal: abort_signal}); // By triggering `remove_buttons_event_controller.abort()`, all buttons with this signal passed will have their listeners removed
+    controlsCell.appendChild(removeButton);
+    row.appendChild(controlsCell);
 
     return row;
 }

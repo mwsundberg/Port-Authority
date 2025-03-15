@@ -1,6 +1,7 @@
 import { getItemFromLocal } from "../global/BrowserStorageManager.js";
 import { isObjectEmpty } from "../global/utils.js";
 import { getActiveTabId } from "../global/browserActions.js";
+import { createElement, renderArrayFactory, renderObjectFactory } from "../global/domUtils.js";
 
 /**
  * A row in the popup display for "Blocked Port Scans"
@@ -47,22 +48,19 @@ import { getActiveTabId } from "../global/browserActions.js";
 function buildBlockedPortsRow(domain, ports) {
     const row = document.createElement("tr");
 
-    // Domain table cell
-    const domainCell = document.createElement("td");
-    domainCell.classList.add("domain-cell");
-    domainCell.innerText = domain;
+    // Domain table cell: `<td class="domain-cell">{domain}</td>`
+    const domainCell = createElement("td", {class: "domain-cell"}, domain);
     row.appendChild(domainCell);
 
     // No ports case: return early
     if (ports.length === 0) {
-        console.warn("No port supplied rendering blocked portscans for '" + domain + "'");
+        console.warn("No port supplied when rendering blocked portscans for '" + domain + "'");
 
         return row;
     }
 
     // Common `td.ports-cell` construction
-    const portsCell = document.createElement("td");
-    portsCell.classList.add("ports-cell");
+    const portsCell = createElement("td", {class: "ports-cell"});
     row.appendChild(portsCell);
 
     // One port: `<td class="ports-cell one-port">{port}</td>`
@@ -80,22 +78,23 @@ function buildBlockedPortsRow(domain, ports) {
     // Expansion toggle: `<input type="checkbox" class="ports-expansion-toggle" aria-label="Toggle ports list expansion">`
     // Comes first in DOM yet visually placed after the ports list
     // The "`<label>`" text is added with `input::after` since need to change what's shown ("+" or "-") based on `input:checked` status
-    const expansionToggle = document.createElement("input");
-    expansionToggle.setAttribute("type", "checkbox");
-    expansionToggle.classList.add("ports-expansion-toggle");
-    expansionToggle.ariaLabel = "Toggle ports list expansion";
-    portsCell.appendChild(expansionToggle);
+    portsCell.appendChild(
+        createElement(
+            "input", {
+                type: "checkbox",
+                class: "ports-expansion-toggle",
+                "aria-label": "Toggle ports list expansion"
+        })
+    );
 
     // Expandable container: `<span class="many-ports ports-expansion-target">` with `<span>{port[i]}</span>{ }` children
-    const portsContainer = document.createElement("span");
-    portsContainer.classList.add("many-ports", "ports-expansion-target");
+    const portsContainer = createElement("span", {class: ["many-ports", "ports-expansion-target"]});
     for (const p of ports) {
-        const span = document.createElement("span");
-        span.innerText = p;
-        
-        portsContainer.appendChild(span);
-        // Adding a space after for text copyability and improved appearance when collapsed
-        portsContainer.appendChild(document.createTextNode(" "));
+        portsContainer.append(
+            createElement("span", {}, p),
+            // Adding a space after each span for text copyability and improved appearance when collapsed
+            " "
+        );
     }
     portsCell.appendChild(portsContainer);
 
@@ -103,11 +102,10 @@ function buildBlockedPortsRow(domain, ports) {
     return row;
 }
 
+// TODO rework this when flipping data structure as discussed in issue #47: https://github.com/ACK-J/Port_Authority/issues/47
 /**
  * Data fetching only, separated from rendering
  * @param {"blocked_ports" | "blocked_hosts"} data_type Which storage key to extract the blocking activity data from
- * 
- * // TODO rework this when flipping data structure as discussed in issue #47: https://github.com/ACK-J/Port_Authority/issues/47
  */
 async function getCurrentTabsBlockingData(data_type) {
     const all_tabs_data = await getItemFromLocal(data_type, {});
@@ -117,57 +115,31 @@ async function getCurrentTabsBlockingData(data_type) {
     return all_tabs_data[tabId];
 }
 
-/**
- * Displays a list of blocked ports in the popup UI.
- * Data is re-rendered each time the popup is opened.
- * // TODO live re-rendering on data change, related to issue #50: https://github.com/ACK-J/Port_Authority/issues/50
- */
+// Populate `#blocked-ports` with table rows
 const blockedPortsWrapper = document.getElementById("blocked-ports");
-const blockedPortsContents = blockedPortsWrapper.querySelector(".dropzone");
-async function renderBlockedPorts() {
-    const blockedPortsList = await getCurrentTabsBlockingData("blocked_ports");
+const renderBlockedPorts = renderObjectFactory({
+    // TODO figure out a way to globally ignore this specific warning since it crops up a lot and is intentionally avoided
+    // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
+    wrapper: blockedPortsWrapper,
+    // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
+    destination: blockedPortsWrapper.querySelector(".dropzone"),
+    fetchData: ()=>getCurrentTabsBlockingData("blocked_ports"),
+    renderItem: buildBlockedPortsRow
+});
 
-    // Clear stale contents, if any
-    blockedPortsContents.replaceChildren()
-
-    // Early return, hiding wrapper if no data provided
-    if(!blockedPortsList) {
-        blockedPortsWrapper.classList.add("unpopulated");
-        return;
-    };
-
-    // Populate the table rows
-    for(const domain in blockedPortsList) {
-        const newRow = buildBlockedPortsRow(domain, blockedPortsList[domain]);
-
-        blockedPortsContents.appendChild(newRow);
-    }
-
-    // Toggle visibility on the container wrapper at end
-    blockedPortsWrapper.classList.remove("unpopulated");
-}
-
-const blocked_hosts_display = document.getElementById("blocked-hosts");
-const blocked_hosts_inner = blocked_hosts_display.querySelector(".dropzone");
-async function updateBlockedHostsDisplay() {
-    const data_blocked_hosts = await getCurrentTabsBlockingData("blocked_hosts");
-    if(!data_blocked_hosts) return;
-    console.log("Hosts data: ", data_blocked_hosts)
-
-    // Build a list of host names as li elements
-    for (const host_name of data_blocked_hosts) {
-        // Create the list element for the blocked host and set the text to the hosts name
-        const host_li = document.createElement("li");
-        host_li.innerText = host_name;
-
-        // Add the list element to the hosts UL
-        blocked_hosts_inner.appendChild(host_li);
-    }
-    // Toggle visibility on the container wrapper at end
-    blocked_hosts_display.classList.remove("unpopulated");
-}
+// Populate `#blocked-hosts` with `<li>{host}</li>` values
+const blockedHostsWrapper = document.getElementById("blocked-hosts");
+const updateBlockedHostsDisplay = renderArrayFactory({
+    // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
+    wrapper: blockedHostsWrapper,
+    // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
+    destination: blockedHostsWrapper.querySelector('.dropzone'),
+    fetchData: ()=>getCurrentTabsBlockingData("blocked_hosts"),
+    renderItem: (host)=>createElement("li", {}, host)
+});
 
 // Helper function for calling all DOM-Modifying functions
+// TODO live re-rendering on data change, related to issue #50: https://github.com/ACK-J/Port_Authority/issues/50
 function buildDataMarkup() {
     // Shows any and all hosts that attempted to connect to a tracking service
     updateBlockedHostsDisplay();
