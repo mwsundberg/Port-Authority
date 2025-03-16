@@ -124,8 +124,8 @@ export function renderObjectFactory({
         const data = await fetchData();
 
         // Early return, hiding wrapper if data is empty
-        if (isObjectEmpty(data)) {
-            wrapper.classList.add("unpopulated");
+        if (!data || isObjectEmpty(data)) {
+            wrapper.setAttribute("hidden", "");
             return;
         }
 
@@ -138,6 +138,6 @@ export function renderObjectFactory({
         }
 
         // Toggle visibility on the container wrapper after populating the data
-        wrapper.classList.remove("unpopulated");
+        wrapper.removeAttribute("hidden");
     };
 }

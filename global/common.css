@@ -50,10 +50,6 @@ body {
     display: inline;
 }
 
-.unpopulated {
-    display: none;
-}
-
 /* Flex-based layout helpers*/
 .flex-column {
     display: flex;

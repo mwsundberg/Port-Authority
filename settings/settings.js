@@ -72,7 +72,7 @@ async function load_allowed_domains() {
 
     // Early return, hiding wrapper if no data provided
     if(allowed_domain_list.length === 0) {
-        table.classList.add("unpopulated");
+        table.setAttribute("hidden", "");
         return;
     }
 
@@ -84,7 +84,7 @@ async function load_allowed_domains() {
     };
 
     // Toggle visibility on the container wrapper at end
-    table.classList.remove("unpopulated");
+    table.removeAttribute("hidden");
 }
 
 async function saveOptions(e) {
