@@ -23,7 +23,7 @@ export function extractURLHost(text) {
  * @returns {boolean} 
  */
 export function isObjectEmpty(object) {
-    return Object.keys(object).length === 0;
+    return object === undefined || object === null || Object.keys(object).length === 0;
 }
 
 /**
