@@ -11,7 +11,6 @@ import { createElement, renderArrayFactory, renderObjectFactory } from "../globa
  * @param {string[]} ports Which port(s) were scanned. Still handled properly if no ports are provided, yet bad practice
  * @returns {Element} A table row with one of the following structures
  * 
- * 
  * **Multiple ports on the same hostname:**
  * 
  * *Note that the expansion/collapsing of the ports list is handled purely in CSS, using logic similar to `switchButton.css`.*
@@ -24,12 +23,12 @@ import { createElement, renderArrayFactory, renderObjectFactory } from "../globa
  *                 <input type="checkbox">
  *                 <!-- `::after=➕︎/➖︎` -->
  *             </label>
-*              <span class="ports-expansion-target">
-*                  <span class="port">{ports[0]}</span><!-- whitespace -->
-*                  <span class="port">{ports[1]}</span><!-- whitespace -->
-*                  <span class="port">{...}</span><!-- whitespace, simpler to add than exclude -->
-*              </span>
-           </span>
+ *             <span class="ports-expansion-target">
+ *                 <span class="port">{ports[0]}</span><!-- whitespace -->
+ *                 <span class="port">{ports[1]}</span><!-- whitespace -->
+ *                 <span class="port">{...}</span><!-- whitespace, simpler to add than exclude -->
+ *             </span>
+ *         </span>
  *     </td>
  * </tr>
  * ```
@@ -55,7 +54,7 @@ import { createElement, renderArrayFactory, renderObjectFactory } from "../globa
 function buildBlockedPortsRow(host, ports) {
     const row = document.createElement("tr");
 
-    // Table cell for hostname: `<td class="host-cell">{host}</td>`
+    /****Table cell for hostname:** `<td class="host-cell">{host}</td>` */
     const hostCell = createElement("td", {class: "host-cell"}, host);
     row.appendChild(hostCell);
 
@@ -81,12 +80,13 @@ function buildBlockedPortsRow(host, ports) {
     //////// Multiple ports: see JSDoc for full structure
     // Side-effect: pluralize the ports header
     document.querySelector("#blocked-ports .ports-header-cell").innerText = "Ports";
+
     // Good to have low-number privileged ports first
     ports.sort();
     
     /****Wrapper element:** `<span class="many-ports">`
      * Needed since styling `<td>`s with `display` sometimes breaks accessiblity: ({@link https://developer.mozilla.org/en-US/docs/Web/CSS/display#tables | MDN citation}).
-     * Using a span since a `<div>` having `display: block;` messes up the formatting on copied text. */
+     * Using a span since a `<div>` with `display: block;` messes up the formatting on copied text. */
     const manyPorts = createElement("span", {class: "many-ports"});
     portsCell.appendChild(manyPorts);
 
@@ -118,12 +118,12 @@ function buildBlockedPortsRow(host, ports) {
     return row;
 }
 
-// TODO rework this when flipping data structure as discussed in issue #47: https://github.com/ACK-J/Port_Authority/issues/47
 /**
  * Data fetching only, separated from rendering logic
  * @param {"blocked_ports" | "blocked_hosts"} data_type Which storage key to extract the blocking activity data from
  */
 async function fetchBlockingDataForCurrentTab(data_type) {
+    // TODO rework this when flipping data structure as discussed in issue #47: https://github.com/ACK-J/Port_Authority/issues/47
     const all_tabs_data = await getItemFromLocal(data_type, {});
     if (isObjectEmpty(all_tabs_data)) return;
 
@@ -145,7 +145,7 @@ const renderBlockedPorts = renderObjectFactory({
 
 // Populate `#blocked-hosts` with `<li>{host}</li>` values
 const blockedHostsWrapper = document.getElementById("blocked-hosts");
-const updateBlockedHostsDisplay = renderArrayFactory({
+const renderBlockedHosts = renderArrayFactory({
     // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
     wrapper: blockedHostsWrapper,
     // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
@@ -154,13 +154,6 @@ const updateBlockedHostsDisplay = renderArrayFactory({
     renderItem: (host)=>createElement("tr", {}, createElement("td", {}, host))
 });
 
-// Helper function for calling all DOM-Modifying functions
 // TODO live re-rendering on data change, related to issue #50: https://github.com/ACK-J/Port_Authority/issues/50
-function buildDataMarkup() {
-    // Shows any and all hosts that attempted to connect to a tracking service
-    updateBlockedHostsDisplay();
-    // Shows any and all ports that were blocked from scanning. Ports are sorted based on host that attempted the port scan
-    renderBlockedPorts();
-}
-
-buildDataMarkup();
+renderBlockedHosts();
+renderBlockedPorts();
