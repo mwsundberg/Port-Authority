@@ -4,25 +4,30 @@ import { getActiveTabId } from "../global/browserActions.js";
 import { createElement, renderArrayFactory, renderObjectFactory } from "../global/domUtils.js";
 
 /**
- * A row in the popup display for "Blocked Port Scans"
- * @param {string} domain The LAN domain/IP that was accessed
+ * **A row in the popup display for "Blocked Port Scans"**
+ * @param {string} host The LAN hostname/IP that was accessed
  * @param {string[]} ports Which port(s) were scanned. Still handled properly if no ports are provided, yet bad practice
  * @returns {Element} A table row with one of the following structures
  * 
  * 
- * **Multiple ports on the same domain:**
+ * **Multiple ports on the same hostname:**
  * 
  * *Note that the expansion/collapsing of the ports list is handled purely in CSS, using logic similar to `switchButton.css`.*
  * ```html
  * <tr>
- *     <td class="domain-cell">{domain}</td>
- *     <td class="ports-cell flex-row-flipped">
- *         <input type="checkbox" class="ports-expansion-toggle" aria-label="Toggle ports list expansion">
- *         <span class="many-ports ports-expansion-target">
- *             <span>{ports[0]}</span><!-- whitespace -->
- *             <span>{ports[1]}</span><!-- whitespace -->
- *             <span>{...}</span><!-- whitespace still added on last item, not strictly neccessary since gap before checkbox is added with `flex-gap` -->
- *         </span>
+ *     <td class="host-cell">{host}</td>
+ *     <td class="ports-cell">
+ *         <span class="many-ports">
+ *             <label class="ports-expansion-toggle" aria-label="Toggle ports list expansion">
+ *                 <input type="checkbox">
+ *                 <!-- `::after=➕︎/➖︎` -->
+ *             </label>
+*              <span class="ports-expansion-target">
+*                  <span class="port">{ports[0]}</span><!-- whitespace -->
+*                  <span class="port">{ports[1]}</span><!-- whitespace -->
+*                  <span class="port">{...}</span><!-- whitespace, simpler to add than exclude -->
+*              </span>
+           </span>
  *     </td>
  * </tr>
  * ```
@@ -30,8 +35,8 @@ import { createElement, renderArrayFactory, renderObjectFactory } from "../globa
  * **One port:**
  * ```html
  * <tr>
- *     <td class="domain-cell">{domain}</td>
- *     <td class="ports-cell one-port">
+ *     <td class="host-cell">{host}</td>
+ *     <td class="ports-cell port">
  *         {ports[0]}
  *     </td>
  * </tr>
@@ -40,63 +45,70 @@ import { createElement, renderArrayFactory, renderObjectFactory } from "../globa
  * **No ports provided (will `console.warn` too):**
  * ```html
  * <tr>
- *     <td class="domain-cell">{domain}</td>
+ *     <td class="host-cell">{host}</td>
  *     <!-- No `<td>` for the ports, intentionally -->
  * </tr>
  * ```
  */
-function buildBlockedPortsRow(domain, ports) {
+function buildBlockedPortsRow(host, ports) {
     const row = document.createElement("tr");
 
-    // Domain table cell: `<td class="domain-cell">{domain}</td>`
-    const domainCell = createElement("td", {class: "domain-cell"}, domain);
-    row.appendChild(domainCell);
+    // Table cell for hostname: `<td class="host-cell">{host}</td>`
+    const hostCell = createElement("td", {class: "host-cell"}, host);
+    row.appendChild(hostCell);
 
-    // No ports case: return early
+    // No ports case: return early and warn
     if (ports.length === 0) {
-        console.warn("No port supplied when rendering blocked portscans for '" + domain + "'");
+        console.warn("No port supplied when rendering blocked portscans for '" + host + "'");
 
         return row;
     }
 
-    // Common `td.ports-cell` construction
+    /****Table cell for ports:** `<td class="ports-cell">` */
     const portsCell = createElement("td", {class: "ports-cell"});
     row.appendChild(portsCell);
 
-    // One port: `<td class="ports-cell one-port">{port}</td>`
+    // One port: `<td class="ports-cell port">{port}</td>`
     if (ports.length === 1) {
-        portsCell.classList.add("one-port");
+        portsCell.classList.add("port");
         portsCell.innerText = ports[0];
 
         return row;
     }
 
-    // Multiple ports: see JSDoc for full structure
-    // Flip display order so the toggle to expand the ports list shows last
-    portsCell.classList.add("flex-row-flipped");
+    //////// Multiple ports: see JSDoc for full structure
+    // Good to have low-number privileged ports first
+    ports.sort();
+    
+    /****Wrapper element:** `<span class="many-ports">`
+     * Needed since styling `<td>`s with `display` sometimes breaks accessiblity: ({@link https://developer.mozilla.org/en-US/docs/Web/CSS/display#tables | MDN citation}).
+     * Using a span since a `<div>` having `display: block;` messes up the formatting on copied text. */
+    const manyPorts = createElement("span", {class: "many-ports"});
+    portsCell.appendChild(manyPorts);
 
-    // Expansion toggle: `<input type="checkbox" class="ports-expansion-toggle" aria-label="Toggle ports list expansion">`
-    // Comes first in DOM yet visually placed after the ports list
-    // The "`<label>`" text is added with `input::after` since need to change what's shown ("+" or "-") based on `input:checked` status
-    portsCell.appendChild(
-        createElement(
-            "input", {
-                type: "checkbox",
-                class: "ports-expansion-toggle",
-                "aria-label": "Toggle ports list expansion"
-        })
+    /****Expansion toggle:** `<label class="ports-expansion-toggle" aria-label="Toggle ports list expansion"><input type="checkbox">{::after=➕︎/➖︎}</label>`
+     * 
+     * All collapse/expand functionality is added solely in CSS.
+     * Wrapping `<label>` instead of placing it after the checkbox to avoid having to set a unique id on each input (for `<label for="...">` referencing).
+     * Label text is set in CSS with `::after` contents, in line with the pure CSS toggling approach.
+     * Using `::after` also removes the need to style with `user-select: none`, which messes up the formatting on copied text.
+     */
+    const expansionToggle = createElement("label", {class: "ports-expansion-toggle", "aria-label": "Toggle ports list expansion"},
+        createElement("input", {type: "checkbox"})
+        /* `::after=➕︎/➖︎` */
     );
+    manyPorts.appendChild(expansionToggle);
 
-    // Expandable container: `<span class="many-ports ports-expansion-target">` with `<span>{port[i]}</span>{ }` children
-    const portsContainer = createElement("span", {class: ["many-ports", "ports-expansion-target"]});
+    /****Expandable container:** `<span class="ports-expansion-target">` with `<span class="port">{port[i]}</span>{ }` children */
+    const portsContainer = createElement("span", {class: "ports-expansion-target"});
     for (const p of ports) {
         portsContainer.append(
-            createElement("span", {}, p),
+            createElement("span", {class: "port"}, p),
             // Adding a space after each span for text copyability and improved appearance when collapsed
             " "
         );
     }
-    portsCell.appendChild(portsContainer);
+    manyPorts.appendChild(portsContainer);
 
     // Row finally fully populated
     return row;
@@ -104,10 +116,10 @@ function buildBlockedPortsRow(domain, ports) {
 
 // TODO rework this when flipping data structure as discussed in issue #47: https://github.com/ACK-J/Port_Authority/issues/47
 /**
- * Data fetching only, separated from rendering
+ * Data fetching only, separated from rendering logic
  * @param {"blocked_ports" | "blocked_hosts"} data_type Which storage key to extract the blocking activity data from
  */
-async function getCurrentTabsBlockingData(data_type) {
+async function fetchBlockingDataForCurrentTab(data_type) {
     const all_tabs_data = await getItemFromLocal(data_type, {});
     if (isObjectEmpty(all_tabs_data)) return;
 
@@ -123,7 +135,7 @@ const renderBlockedPorts = renderObjectFactory({
     wrapper: blockedPortsWrapper,
     // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
     destination: blockedPortsWrapper.querySelector(".dropzone"),
-    fetchData: ()=>getCurrentTabsBlockingData("blocked_ports"),
+    fetchData: ()=>fetchBlockingDataForCurrentTab("blocked_ports"),
     renderItem: buildBlockedPortsRow
 });
 
@@ -134,7 +146,7 @@ const updateBlockedHostsDisplay = renderArrayFactory({
     wrapper: blockedHostsWrapper,
     // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
     destination: blockedHostsWrapper.querySelector('.dropzone'),
-    fetchData: ()=>getCurrentTabsBlockingData("blocked_hosts"),
+    fetchData: ()=>fetchBlockingDataForCurrentTab("blocked_hosts"),
     renderItem: (host)=>createElement("li", {}, host)
 });
 
