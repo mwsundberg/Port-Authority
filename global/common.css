@@ -8,11 +8,12 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
+        /* Colors selected to match the settings page's wrapper container styles */
         --light: #BFBFC9;
         --dark: #23222B;
         --background: var(--dark);
         --foreground: var(--light);
-        --red: #B20000;
+        --red: #B20000; /* Slightly brighter for better contrast against `--background` */
     }
 }
 
@@ -71,4 +72,25 @@ body {
 
 .align-right {
     justify-content: flex-end;
+}
+
+/* Tables - used in Settings and Popup */
+table {
+    border-collapse: collapse;
+    min-width: 100%;
+}
+/* Rows */
+tr {
+    border: 1px solid color-mix(in oklab, var(--background) 80%, var(--foreground));
+}
+tbody tr:nth-child(odd) {
+    background-color: color-mix(in oklab, var(--background) 95%, var(--foreground));
+}
+tbody tr:hover {
+    /* Highlight rows in a color based on the browser's SelectedItem <system-color> */
+    background-color: color-mix(in oklab, var(--background) 70%, SelectedItem);
+}
+/* Cells */
+th, td {
+    padding: 0.25em;
 }
