@@ -134,10 +134,7 @@ async function fetchBlockingDataForCurrentTab(data_type) {
 // Populate `#blocked-ports` with table rows
 const blockedPortsWrapper = document.getElementById("blocked-ports");
 const renderBlockedPorts = renderObjectFactory({
-    // TODO figure out a way to globally ignore this specific warning since it crops up a lot and is intentionally avoided
-    // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
     wrapper: blockedPortsWrapper,
-    // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
     destination: blockedPortsWrapper.querySelector(".dropzone"),
     fetchData: ()=>fetchBlockingDataForCurrentTab("blocked_ports"),
     renderItem: buildBlockedPortsRow
@@ -146,9 +143,7 @@ const renderBlockedPorts = renderObjectFactory({
 // Populate `#blocked-hosts` with `<li>{host}</li>` values
 const blockedHostsWrapper = document.getElementById("blocked-hosts");
 const renderBlockedHosts = renderArrayFactory({
-    // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
     wrapper: blockedHostsWrapper,
-    // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
     destination: blockedHostsWrapper.querySelector('.dropzone'),
     fetchData: ()=>fetchBlockingDataForCurrentTab("blocked_hosts"),
     renderItem: (host)=>createElement("tr", {}, createElement("td", {}, host))
