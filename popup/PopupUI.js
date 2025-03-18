@@ -151,7 +151,7 @@ const updateBlockedHostsDisplay = renderArrayFactory({
     // @ts-ignore (potentially `null` element passed. Want to fail quick if the DOM doesn't match expectations)
     destination: blockedHostsWrapper.querySelector('.dropzone'),
     fetchData: ()=>fetchBlockingDataForCurrentTab("blocked_hosts"),
-    renderItem: (host)=>createElement("li", {}, host)
+    renderItem: (host)=>createElement("tr", {}, createElement("td", {}, host))
 });
 
 // Helper function for calling all DOM-Modifying functions
