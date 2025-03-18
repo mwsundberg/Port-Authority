@@ -2,6 +2,10 @@ body {
     gap: 1rem;
 }
 
+input::placeholder {
+    font-style: italic;
+}
+
 /* Allowlist table */
 #allowedDomainsTable {
     border-collapse: collapse;
@@ -22,7 +26,7 @@ body {
     width: 0; /* TODO find a better way to indicate column should be shrink-wrapped to end */
 }
 
-/* Remove domain from allowlist button */
+/* "Remove domain from allowlist" button */
 #allowedDomainsTableContents .controls-cell button {
     background: color-mix(in oklab, var(--background) 85%, var(--foreground));;
     border: none;
