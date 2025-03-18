@@ -5,6 +5,8 @@ import { createElement, renderArrayFactory, renderObjectFactory } from "../globa
 
 /**
  * **A row in the popup display for "Blocked Port Scans"**
+ * 
+ * Has a side-effect of pluralizing "Ports" in the table header if multiple ports on the same hostname encountered
  * @param {string} host The LAN hostname/IP that was accessed
  * @param {string[]} ports Which port(s) were scanned. Still handled properly if no ports are provided, yet bad practice
  * @returns {Element} A table row with one of the following structures
@@ -77,6 +79,8 @@ function buildBlockedPortsRow(host, ports) {
     }
 
     //////// Multiple ports: see JSDoc for full structure
+    // Side-effect: pluralize the ports header
+    document.querySelector("#blocked-ports .ports-header-cell").innerText = "Ports";
     // Good to have low-number privileged ports first
     ports.sort();
     
