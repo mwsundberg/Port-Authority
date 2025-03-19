@@ -58,7 +58,7 @@ async function saveOptions(e) {
     try {
         url = extractURLHost(e.target[0].value);
     } catch(error) {
-        console.error(error);
+        console.warn("Unparseable allowlist domain added, rejecting:", {passed: e?.target[0]?.value, error});
         alert("Please enter a valid domain.");
         return;
     }
@@ -67,6 +67,7 @@ async function saveOptions(e) {
         (list) => {
             // Only update the list if it's a new member
             if (!list.includes(url)) {
+                console.log("Adding domain to allowlist: " + url);
                 return list.concat(url);
             } else {
                 alert("This domain is already in the list.");

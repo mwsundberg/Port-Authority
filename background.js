@@ -4,7 +4,7 @@ import { getItemFromLocal, setItemInLocal, modifyItemInLocal,
 async function startup(){
     // No need to check and initialize notification, state, and allow list values as they will 
     // fall back to the default values until explicitly set
-    console.log("Startup called");
+    console.info("Startup called");
 
 	// Get the blocking state from cold storage
     const state = await getItemFromLocal("blocking_enabled", true); 
@@ -154,27 +154,31 @@ const isLocalWrapper = {
  * @returns 
  */
 async function cancel(requestDetails) {
-    // Request logging (for debug purposes) hacked onto the notifications setting
-    if (await getItemFromLocal("notificationsAllowed", false)) {
-        console.debug("requestDetails:", requestDetails);
-    }
+    const requestDetailsDebug = {origin: requestDetails.originUrl, document: requestDetails.documentUrl, tabId: requestDetails.tabId, thirdParty: requestDetails.thirdParty, url: requestDetails.url};
+    if(requestDetails.originUrl !== requestDetails.documentUrl || !requestDetails.originUrl || requestDetails.tabId === -1) console.warn("Abnormal request in `cancel()`:", requestDetailsDebug);
+    console.debug("Request:", requestDetailsDebug);
 
     // First check the whitelist
-    let check_allowed_url;
+    let origin_host;
     try {
-        check_allowed_url = new URL(requestDetails.originUrl);
+        origin_host = new URL(requestDetails.originUrl).host;
     } catch {
-        console.error("Aborted filtering on domain due to unparseable domain: ", requestDetails.originUrl);
+        console.error("Aborted filtering on domain due to being passed unparseable domain: " + requestDetails.originUrl);
         return { cancel: false }; // invalid origin
     }
 
     const allowed_domains_list = await getItemFromLocal("allowed_domain_list", []);
-    // Perform an exact match against the whitelisted domains (dont assume subdomains are allowed)
+    // Check against the allowlist (matches port and exact domain, ie. differing subdomains fail)
     const domainIsWhiteListed = allowed_domains_list.some(
-        (domain) => check_allowed_url.host === domain
+        (host) => {
+            if(origin_host === host) {
+                console.log("Allowlist match:", {allow: host, host: origin_host});
+                return true;
+            }
+            return false;
+        }
     );
     if (domainIsWhiteListed){
-        console.debug("Aborted filtering on domain due to whitelist: ", check_allowed_url);
         return { cancel: false };
     }
 
@@ -192,7 +196,7 @@ async function cancel(requestDetails) {
         let resolving = await browser.dns.resolve(url.host, ["canonical_name"]);
         // If the CNAME redirects to a online-metrix.net domain -> Block
         if (thm.test(resolving.canonicalName)) {
-            console.debug("Blocking domain for being a threatmetrix match: ", {url: url, cname: resolving.canonicalName});
+            console.log("Blocking domain for being a threatmetrix match: ", {url: url, cname: resolving.canonicalName});
             increaseBadge(requestDetails, true); // increment badge and alert
             addBlockedTrackingHost(url, requestDetails.tabId);
             return { cancel: true };
@@ -204,10 +208,12 @@ async function cancel(requestDetails) {
         // If URL in the address bar is a local address dont block the request
         if (!local_filter.test(requestDetails.originUrl)) {
             let url = new URL(requestDetails.url);
-            console.debug("Blocking domain for portscanning: ", url);
+            console.log("Blocking domain for portscanning: ", url);
             increaseBadge(requestDetails, false); // increment badge and alert
             addBlockedPortToHost(url, requestDetails.tabId);
             return { cancel: true };
+        } else {
+            console.log("Local request from local source allowed:", {url: requestDetails.url, origin: requestDetails.originUrl})
         }
     }
     // Dont block sites that don't alert the detection
@@ -222,8 +228,10 @@ async function start() {  // Enables blocking
             { urls: ["<all_urls>"] }, // Match all HTTP, HTTPS, FTP, FTPS, WS, WSS URLs.
             ["blocking"] // if cancel() returns true block the request.
         );
-
-        console.log("Attached `onBeforeRequest` listener successfully: blocking enabled");
+        if(!browser.webRequest.onBeforeRequest.hasListener(cancel)) {
+            throw new Error("Failed to attach `cancel` as `onBeforeRequest` listener");
+        }
+        console.info("Attached `onBeforeRequest` listener successfully: blocking enabled");
         await setItemInLocal("blocking_enabled", true);
     } catch (e) {
         console.error("START() ", e);
@@ -235,7 +243,7 @@ async function stop() {  // Disables blocking
         //Remove event listener
         browser.webRequest.onBeforeRequest.removeListener(cancel);
 
-        console.log("Removed `onBeforeRequest` listener successfully: blocking disabled");
+        console.info("Removed `onBeforeRequest` listener successfully: blocking disabled");
         await setItemInLocal("blocking_enabled", false);
     } catch (e) {
         console.error("STOP() ", e);
@@ -296,7 +304,7 @@ async function onMessage(message, sender) {
   // Add origin check for security
   const extensionOrigin = new URL(browser.runtime.getURL("")).origin;
   if (sender.url !== `${extensionOrigin}/popup/popup.html`) {
-    console.warn('Message from unexpected origin:', sender.url);
+    console.warn('Message from unexpected origin: ' + sender.url);
     return;
   }
 
@@ -313,12 +321,13 @@ async function onMessage(message, sender) {
       await setItemInLocal(message.key, message.value);
       break;
     case 'setNotificationsAllowed':
+      console.info("Notifications toggled: " + (message.value? "on":"off"));
       await setItemInLocal("notificationsAllowed", message.value);
       break;
     case 'getItemInLocal':
       return await getItemFromLocal(message.key, message.defaultValue);
     default:
-      console.warn('Port Authority: unknown message: ', message);
+      console.error('Unknown message:', message);
       break;
   }
 }
