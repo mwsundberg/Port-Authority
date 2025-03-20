@@ -4,6 +4,19 @@ import { getActiveTabId } from "../global/browserActions.js";
 import { createElement, renderArrayFactory, renderObjectFactory } from "../global/domUtils.js";
 
 /**
+ * Data fetching only, separated from rendering logic
+ * @param {"blocked_ports" | "blocked_hosts"} data_type Which storage key to extract the blocking activity data from
+ */
+async function fetchBlockingDataForCurrentTab(data_type) {
+    // TODO rework this when flipping data structure as discussed in issue #47: https://github.com/ACK-J/Port_Authority/issues/47
+    const all_tabs_data = await getItemFromLocal(data_type, {});
+    if (isObjectEmpty(all_tabs_data)) return;
+
+    const tabId = await getActiveTabId();
+    return all_tabs_data[tabId];
+}
+
+/**
  * **A row in the popup display for "Blocked Port Scans"**
  * 
  * Has a side-effect of pluralizing "Ports" in the table header if multiple ports on the same hostname encountered
@@ -54,7 +67,7 @@ import { createElement, renderArrayFactory, renderObjectFactory } from "../globa
 function buildBlockedPortsRow(host, ports) {
     const row = document.createElement("tr");
 
-    /****Table cell for hostname:** `<td class="host-cell">{host}</td>` */
+    /****Table cell for the hostname:** `<td class="host-cell">{host}</td>` */
     const hostCell = createElement("td", {class: "host-cell"}, host);
     row.appendChild(hostCell);
 
@@ -65,7 +78,7 @@ function buildBlockedPortsRow(host, ports) {
         return row;
     }
 
-    /****Table cell for ports:** `<td class="ports-cell">` */
+    /****Table cell for the ports:** `<td class="ports-cell">` */
     const portsCell = createElement("td", {class: "ports-cell"});
     row.appendChild(portsCell);
 
@@ -86,7 +99,7 @@ function buildBlockedPortsRow(host, ports) {
     
     /****Wrapper element:** `<span class="many-ports">`
      * Needed since styling `<td>`s with `display` sometimes breaks accessiblity: ({@link https://developer.mozilla.org/en-US/docs/Web/CSS/display#tables | MDN citation}).
-     * Using a span since a `<div>` with `display: block;` messes up the formatting on copied text. */
+     * Using a span since a `<div>` with `display: block` messes up the formatting of copied text. */
     const manyPorts = createElement("span", {class: "many-ports"});
     portsCell.appendChild(manyPorts);
 
@@ -95,7 +108,7 @@ function buildBlockedPortsRow(host, ports) {
      * All collapse/expand functionality is added solely in CSS.
      * Wrapping `<label>` instead of placing it after the checkbox to avoid having to set a unique id on each input (for `<label for="...">` referencing).
      * Label text is set in CSS with `::after` contents, in line with the pure CSS toggling approach.
-     * Using `::after` also removes the need to style with `user-select: none`, which messes up the formatting on copied text.
+     * Using `::after` also removes the need to style with `user-select: none`, which messes up the formatting of copied text.
      */
     const expansionToggle = createElement("label", {class: "ports-expansion-toggle", "aria-label": "Toggle ports list expansion"},
         createElement("input", {type: "checkbox"})
@@ -103,7 +116,7 @@ function buildBlockedPortsRow(host, ports) {
     );
     manyPorts.appendChild(expansionToggle);
 
-    /****Expandable container:** `<span class="ports-expansion-target">` with `<span class="port">{port[i]}</span>{ }` children */
+    /****Expandable container for multiple ports:** `<span class="ports-expansion-target">` with `<span class="port">{port[i]}</span>{" "}` children */
     const portsContainer = createElement("span", {class: "ports-expansion-target"});
     for (const p of ports) {
         portsContainer.append(
@@ -118,19 +131,6 @@ function buildBlockedPortsRow(host, ports) {
     return row;
 }
 
-/**
- * Data fetching only, separated from rendering logic
- * @param {"blocked_ports" | "blocked_hosts"} data_type Which storage key to extract the blocking activity data from
- */
-async function fetchBlockingDataForCurrentTab(data_type) {
-    // TODO rework this when flipping data structure as discussed in issue #47: https://github.com/ACK-J/Port_Authority/issues/47
-    const all_tabs_data = await getItemFromLocal(data_type, {});
-    if (isObjectEmpty(all_tabs_data)) return;
-
-    const tabId = await getActiveTabId();
-    return all_tabs_data[tabId];
-}
-
 // Populate `#blocked-ports` with table rows
 const blockedPortsWrapper = document.getElementById("blocked-ports");
 const renderBlockedPorts = renderObjectFactory({
@@ -140,7 +140,7 @@ const renderBlockedPorts = renderObjectFactory({
     renderItem: buildBlockedPortsRow
 });
 
-// Populate `#blocked-hosts` with `<li>{host}</li>` values
+// Populate `#blocked-hosts` with rows of `<tr><td>{host}</td></tr>`
 const blockedHostsWrapper = document.getElementById("blocked-hosts");
 const renderBlockedHosts = renderArrayFactory({
     wrapper: blockedHostsWrapper,
@@ -149,6 +149,6 @@ const renderBlockedHosts = renderArrayFactory({
     renderItem: (host)=>createElement("tr", {}, createElement("td", {}, host))
 });
 
-// TODO live re-rendering on data change, related to issue #50: https://github.com/ACK-J/Port_Authority/issues/50
+// TODO live re-rendering on data change, could use method discussed in issue #50: https://github.com/ACK-J/Port_Authority/issues/50
 renderBlockedHosts();
 renderBlockedPorts();

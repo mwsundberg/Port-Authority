@@ -28,4 +28,4 @@ getItemFromLocal("notificationsAllowed", true).then((notificationsAllowed) => {
 
 
 // Clear the loading class that was disabling the slider animations when we were setting the initial values
-setTimeout(()=>document.body.classList.remove('loading'), 5);
+setTimeout(() => document.body.classList.remove('loading'), 5);

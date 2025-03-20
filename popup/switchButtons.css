@@ -56,7 +56,7 @@ body.loading .slider::after {
   transition: none;
 }
 
-/* Transformed state */
+/* Toggled-on state */
 .switch input:checked + .slider {
     background-color: var(--red);
 }
