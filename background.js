@@ -25,8 +25,8 @@ async function startup(){
 function normalizeFQDN(url) {
     if(!url) return;
 
-    // Nullish check at end is to accomodate not finding a regex match, which is technically impossible, but anyways.
-    url.hostname = url.hostname.match(/^(.*?)\.?$/)?.[1] ?? "";
+    // @ts-ignore (Typescript isn't good enough at regex to know that there will *always* be a capture group returned, even if it's just "")
+    url.hostname = url.hostname.match(/^(.*?)\.?$/)[1];
 }
 
 
