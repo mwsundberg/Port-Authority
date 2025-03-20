@@ -31,9 +31,9 @@ function normalizeFQDN(url) {
 
 
 /**
- * Example request URL structure for discussing different URL interpretations: *"protocol://user:pass@sub.example.tld.:1234/path/?query#hash"*
- * Restrictive access checks should be broad and check against the `hostname` URL property (ie. "sub.example.tld.", ignoring port and protocol)
- * Permissive access checks should cautious and check against the `host` URL property (ie. "sub.example.tld.:1234", ignoring protocol)
+ * Example request URL structure for discussing different URL interpretations: *`protocol://user:pass@sub.example.tld.:1234/path/?query#hash`*
+ * Restrictive access checks should be broad and check against the `hostname` URL property (ie. *`sub.example.tld.`*, ignoring port and protocol)
+ * Permissive access checks should cautious and check against the `host` URL property (ie. *`sub.example.tld.:1234`*, ignoring protocol)
  * @param {{originUrl: string, documentUrl: string, thirdParty: boolean, url: string, tabId: number}} requestDetails 
  * @returns {Promise<{ cancel: boolean }>} Whether to block the request or not
  */
