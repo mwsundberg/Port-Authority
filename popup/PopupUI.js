@@ -97,7 +97,7 @@ function buildBlockedPortsRow(host, ports) {
     document.querySelector("#blocked-ports .ports-header-cell").innerText = "Ports";
 
     // Good to have low-number privileged ports first
-    ports.sort();
+    ports.sort((a, b)=>(+a - +b));
     
     /****Wrapper element:** `<span class="many-ports">`
      * Needed since styling `<td>`s with `display` sometimes breaks accessiblity ({@link https://developer.mozilla.org/en-US/docs/Web/CSS/display#tables | MDN citation}).

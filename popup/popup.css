@@ -58,7 +58,6 @@ main {
 /* Blocked port scans table styling */
 #blocked-ports table {
     table-layout: fixed;
-    overflow: hidden;
     /* font-family: ui-monospace, monospace; */
 }
 .host-cell {
@@ -66,7 +65,6 @@ main {
     width: fit-content;
 }
 .ports-cell {
-    overflow: hidden;
     max-width: 8ch;
 }
 
@@ -110,6 +108,7 @@ main {
 
 /* The expansion toggle button is '➕︎' or '➖︎' and the actual checkbox is hidden */
 .ports-expansion-toggle::after {
+    cursor: pointer;
     content: '➕︎';
 }
 .ports-expansion-toggle:has(input:checked)::after {

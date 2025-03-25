@@ -72,7 +72,7 @@ async function load_allowed_domains() {
     table_body.replaceChildren();
 
     // Early return, hiding wrapper if no data provided
-    if(allowed_domain_list.length === 0) {
+    if(allowed_domain_list?.length === 0) {
         table.setAttribute("hidden", "");
         return;
     }
@@ -100,7 +100,7 @@ function extractURLHost(text) {
 
     // We don't actually care about the protocol as we only compare url.host
     // But the URL object will fail to create if no protocol is provided
-    if (!url.startsWith("http")) {
+    if (!url.match(/^\w*:\/\//)) {
         url = "http://" + url;
     }
     const newUrl = new URL(url);
