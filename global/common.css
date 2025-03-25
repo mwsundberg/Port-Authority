@@ -79,6 +79,10 @@ table {
     border-collapse: collapse;
     min-width: 100%;
 }
+/* Headers */
+thead {
+    text-align: left;
+}
 /* Rows */
 tr {
     border: 1px solid color-mix(in oklab, var(--background) 80%, var(--foreground));
