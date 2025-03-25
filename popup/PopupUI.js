@@ -32,15 +32,15 @@ async function fetchBlockingDataForCurrentTab(data_type) {
  *     <td class="host-cell">{host}</td>
  *     <td class="ports-cell">
  *         <span class="many-ports">
- *             <label class="ports-expansion-toggle" aria-label="Toggle ports list expansion">
- *                 <input type="checkbox">
- *                 <!-- `::after=➕︎/➖︎` -->
- *             </label>
  *             <span class="ports-expansion-target">
  *                 <span class="port">{ports[0]}</span><!-- whitespace -->
  *                 <span class="port">{ports[1]}</span><!-- whitespace -->
  *                 <span class="port">{...}</span><!-- whitespace, simpler to leave than remove -->
  *             </span>
+ *             <label class="ports-expansion-toggle" aria-label="Toggle ports list expansion">
+ *                 <input type="checkbox">
+ *                 <!-- `::after=➕︎/➖︎` -->
+ *             </label>
  *         </span>
  *     </td>
  * </tr>
@@ -105,6 +105,17 @@ function buildBlockedPortsRow(host, ports) {
     const manyPorts = createElement("span", {class: "many-ports"});
     portsCell.appendChild(manyPorts);
 
+    /****Expandable container for multiple ports:** `<span class="ports-expansion-target">` with `<span class="port">{port[i]}</span>{" "}` children */
+    const portsContainer = createElement("span", {class: "ports-expansion-target"});
+    for (const p of ports) {
+        portsContainer.append(
+            createElement("span", {class: "port"}, p),
+            // Adding a space after each span for text copyability and improved appearance when collapsed
+            " "
+        );
+    }
+    manyPorts.appendChild(portsContainer);
+
     /****Expansion toggle:** `<label class="ports-expansion-toggle" aria-label="Toggle ports list expansion"><input type="checkbox">{::after=➕︎/➖︎}</label>`
      * 
      * Collapse/expand functionality is added with CSS.
@@ -116,17 +127,6 @@ function buildBlockedPortsRow(host, ports) {
         /* `::after=➕︎/➖︎` */
     );
     manyPorts.appendChild(expansionToggle);
-
-    /****Expandable container for multiple ports:** `<span class="ports-expansion-target">` with `<span class="port">{port[i]}</span>{" "}` children */
-    const portsContainer = createElement("span", {class: "ports-expansion-target"});
-    for (const p of ports) {
-        portsContainer.append(
-            createElement("span", {class: "port"}, p),
-            // Adding a space after each span for text copyability and improved appearance when collapsed
-            " "
-        );
-    }
-    manyPorts.appendChild(portsContainer);
 
     // Row finally fully populated
     return row;

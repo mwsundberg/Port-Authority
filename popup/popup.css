@@ -79,7 +79,6 @@ main {
 .many-ports {
     width: 100%;
     display: inline flex;
-    flex-direction: row-reverse;
     justify-content: space-between;
 }
 /* Put commas between ports when in collapsed view */
@@ -102,7 +101,7 @@ main {
 }
 
 /* Put each port on its own line when expanded */
-.many-ports .ports-expansion-toggle:has(input:checked) + .ports-expansion-target .port {
+.many-ports:has(.ports-expansion-toggle input:checked) .ports-expansion-target .port {
     display: block;
 }
 
