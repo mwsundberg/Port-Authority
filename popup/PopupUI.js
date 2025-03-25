@@ -21,12 +21,12 @@ async function fetchBlockingDataForCurrentTab(data_type) {
  * 
  * Has a side-effect of pluralizing "Ports" in the table header if multiple ports on the same hostname encountered
  * @param {string} host The LAN hostname/IP that was accessed
- * @param {string[]} ports Which port(s) were scanned. Still handled properly if no ports are provided, yet bad practice
+ * @param {string[]} ports Which port(s) were scanned
  * @returns {Element} A table row with one of the following structures
  * 
  * **Multiple ports on the same hostname:**
  * 
- * *Note that the expansion/collapsing of the ports list is handled purely in CSS, using logic similar to `switchButton.css`.*
+ * *Note that the expansion/collapsing of the ports list is handled purely in CSS*
  * ```html
  * <tr>
  *     <td class="host-cell">{host}</td>
@@ -39,7 +39,7 @@ async function fetchBlockingDataForCurrentTab(data_type) {
  *             <span class="ports-expansion-target">
  *                 <span class="port">{ports[0]}</span><!-- whitespace -->
  *                 <span class="port">{ports[1]}</span><!-- whitespace -->
- *                 <span class="port">{...}</span><!-- whitespace, simpler to add than exclude -->
+ *                 <span class="port">{...}</span><!-- whitespace, simpler to leave than remove -->
  *             </span>
  *         </span>
  *     </td>
@@ -60,11 +60,13 @@ async function fetchBlockingDataForCurrentTab(data_type) {
  * ```html
  * <tr>
  *     <td class="host-cell">{host}</td>
- *     <!-- No `<td>` for the ports, intentionally -->
+ *     <!-- Ports `<td>` Removed -->
  * </tr>
  * ```
  */
 function buildBlockedPortsRow(host, ports) {
+    /****Main container:** `<tr>`
+     * The function's return value. Has a cell for the host and a cell for the ports scanned on that host (cell removed if empty array). */
     const row = document.createElement("tr");
 
     /****Table cell for the hostname:** `<td class="host-cell">{host}</td>` */
@@ -98,17 +100,16 @@ function buildBlockedPortsRow(host, ports) {
     ports.sort();
     
     /****Wrapper element:** `<span class="many-ports">`
-     * Needed since styling `<td>`s with `display` sometimes breaks accessiblity: ({@link https://developer.mozilla.org/en-US/docs/Web/CSS/display#tables | MDN citation}).
+     * Needed since styling `<td>`s with `display` sometimes breaks accessiblity ({@link https://developer.mozilla.org/en-US/docs/Web/CSS/display#tables | MDN citation}).
      * Using a span since a `<div>` with `display: block` messes up the formatting of copied text. */
     const manyPorts = createElement("span", {class: "many-ports"});
     portsCell.appendChild(manyPorts);
 
     /****Expansion toggle:** `<label class="ports-expansion-toggle" aria-label="Toggle ports list expansion"><input type="checkbox">{::after=➕︎/➖︎}</label>`
      * 
-     * All collapse/expand functionality is added solely in CSS.
-     * Wrapping `<label>` instead of placing it after the checkbox to avoid having to set a unique id on each input (for `<label for="...">` referencing).
-     * Label text is set in CSS with `::after` contents, in line with the pure CSS toggling approach.
-     * Using `::after` also removes the need to style with `user-select: none`, which messes up the formatting of copied text.
+     * Collapse/expand functionality is added with CSS.
+     * Wrapping `<label>` instead of placing it after the checkbox to avoid having to set a unique id on each input.
+     * Label text is set in CSS with `::after` contents.
      */
     const expansionToggle = createElement("label", {class: "ports-expansion-toggle", "aria-label": "Toggle ports list expansion"},
         createElement("input", {type: "checkbox"})
@@ -149,6 +150,6 @@ const renderBlockedHosts = renderArrayFactory({
     renderItem: (host)=>createElement("tr", {}, createElement("td", {}, host))
 });
 
-// TODO live re-rendering on data change, could use method discussed in issue #50: https://github.com/ACK-J/Port_Authority/issues/50
+// TODO live rerendering on data change, could use storage event coordinating as discussed in issue #50: https://github.com/ACK-J/Port_Authority/issues/50
 renderBlockedHosts();
 renderBlockedPorts();

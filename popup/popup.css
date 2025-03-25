@@ -42,7 +42,6 @@ main {
 #settings::after {
     content: '';
 
-    /* Position and sizing */
     margin-left: 2.5px;
     margin-bottom: -5px;
     height: 24px;
@@ -51,12 +50,12 @@ main {
     /* `currentColor` matches the `color` property's value */
     background-color: currentColor;
 
-    /* Make it gear shaped */
+    /* Make it gear shaped, instead of a 24x24 gray rectangle */
     mask-image: url("../icons/settings.png");
     mask-size: 100%;
 }
 
-/* Blocked port scans styling */
+/* Blocked port scans table styling */
 #blocked-ports table {
     table-layout: fixed;
     overflow: hidden;
@@ -96,7 +95,7 @@ main {
     content: '';
 }
 
-/* Unexpanded ports list shouldn't cause the table to expand any */
+/* Unexpanded ports list overflow is hidden with a `...` */
 .ports-expansion-target {
     flex-shrink: 1;
     overflow-x: hidden;
@@ -109,7 +108,7 @@ main {
     display: block;
 }
 
-/* The expansion toggle label should be either '➕︎' or '➖︎' */
+/* The expansion toggle button is '➕︎' or '➖︎' and the actual checkbox is hidden */
 .ports-expansion-toggle::after {
     content: '➕︎';
 }

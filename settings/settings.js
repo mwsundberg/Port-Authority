@@ -2,9 +2,9 @@ import { getItemFromLocal, modifyItemInLocal } from "../global/BrowserStorageMan
 import { createElement } from "../global/domUtils.js";
 
 /**
- * A single row in the allowed domain list display
- * @param {string} domain The raw representation of the domain, used both for display and storage
- * @param {AbortSignal} abort_signal Signal to disable the 'remove' button
+ * A single row in the allowedlist table
+ * @param {string} domain Technically a `URL.host` aka domain + port
+ * @param {AbortSignal} abort_signal Signal to kill the 'remove' button listeners when rerendering the table
  * @returns {Element}
  * ```html
  * <tr>
@@ -20,6 +20,7 @@ import { createElement } from "../global/domUtils.js";
  * ```
  */
 function allowed_domain_row(domain, abort_signal) {
+    /** Added to the remove button's onclick, it's a closure that uses the `domain` value from `allow_domain_row`'s arguments */
     const remove_domain = async () => {
         // Remove the current domain from the list
         await modifyItemInLocal("allowed_domain_list", [],
@@ -31,17 +32,17 @@ function allowed_domain_row(domain, abort_signal) {
         load_allowed_domains();
     }
 
-    // Build out the DOM for the table row
+    /****Main container:** `<tr>` */
     const row = document.createElement("tr");
 
-    // Domain cell: `<td class="domain-cell selectable">{domain}</td>`
+    /****Domain cell:** `<td class="domain-cell selectable">{domain}</td>` */
     const domainCell = createElement("td", {class: "domain-cell"}, domain);
     row.appendChild(domainCell);
 
     const controlsCell = createElement("td", {class: "controls-cell"});
 
-    // Remove domain button: `<button class="unselectable" aria-label="Remove {domain} from allowlist">✕</button>`
-    // Note that `.unselectable` is applied to escape the selectable effect applied at the `<tbody>` level
+    /****Remove domain button:** `<button class="unselectable" aria-label="Remove {domain} from allowlist">✕</button>`
+     * Note that `.unselectable` is applied to disable the selectable effect applied at the `<tbody>` level. */
     const removeButton = createElement("button", {class: "unselectable", "aria-label": `Remove '${domain}' from allowlist`}, "✕");
     removeButton.addEventListener("click", remove_domain, {signal: abort_signal}); // By triggering `remove_buttons_event_controller.abort()`, all buttons with this signal passed will have their listeners removed
     controlsCell.appendChild(removeButton);
@@ -55,7 +56,8 @@ const table_body = document.getElementById("allowedDomainsTableContents");
 const table = document.getElementById("allowedDomainsTable");
 async function load_allowed_domains() {
     // Remove all of the stale listeners
-    // TODO figure out if this all is needed, unsure since calling `replaceChildren` might or might not do listener cleanup on the deleted children
+    // TODO figure out if this is needed, unsure since calling `replaceChildren` could do listener cleanup on the deleted children
+    // If it's removable can replace this all with a `renderArrayFactory`
     if (remove_buttons_event_controller) remove_buttons_event_controller.abort();
 
     // Make a new AbortController for all of the fresh buttons
@@ -88,8 +90,8 @@ async function load_allowed_domains() {
 
 /**
  * Get a well-formed host to match against from an user-supplied URL
- * @param {string} text A URL-like value (eg `ftp://example.com/file/path/etc`, `google.com/`, `example.com:8080`)
- * @returns {string} Well formatted host portion of url (eg `example.com`, `google.com`, `example.com:8080`)
+ * @param {string} text A URL-like value (eg `https://example.com/file/path/etc`, `discord.com/invite/abcdefg`, `example.com:8080`)
+ * @returns {string} Well formatted host portion of url (eg `example.com`, `discord.com`, `example.com:8080`)
  * 
  * @throws Parsing an invalid URL
  */
@@ -106,7 +108,7 @@ function extractURLHost(text) {
 }
 
 async function saveOptions(e) {
-    // Prevent the form submit event from reloading the page and clearing any alerts shown
+    // Prevent the form submit event from reloading the page and hiding `alert`s used for feedback
     e.preventDefault();
 
     let url;
@@ -132,7 +134,7 @@ async function saveOptions(e) {
             }
         });
 
-    // Refresh the table since no longer relying on the form submitting to reload the page
+    // Rerender the table since no longer relying on the form submitting to reload the page
     load_allowed_domains();
 }
 

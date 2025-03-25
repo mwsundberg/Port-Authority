@@ -1,10 +1,10 @@
 import { getItemFromLocal, setItemInLocal } from "../global/BrowserStorageManager.js";
 
-// Can attach options page link instantly
+// Can attach settings page link instantly, no state reading needed
 document.getElementById('settings').addEventListener("click", () =>
     browser.runtime.openOptionsPage());
 
-// Blocking switch bindings (handled with `.then()` to allow for parallel setup of notifications switch)
+// Blocking switch state bindings (wrapped in `.then()` to allow for parallel setup of notifications switch)
 getItemFromLocal("blocking_enabled", true).then((blocking_enabled) => {
     const blocking_switch = document.getElementById("blocking_switch");
 
@@ -16,7 +16,7 @@ getItemFromLocal("blocking_enabled", true).then((blocking_enabled) => {
         }));
 });
 
-// Notifications switch bindings
+// Notifications switch state bindings
 getItemFromLocal("notificationsAllowed", true).then((notificationsAllowed) => {
     const notifications_switch = document.getElementById("notifications_switch");
 

@@ -11,7 +11,7 @@ input::placeholder {
     width: 0; /* TODO find a better way to indicate column should be shrink-wrapped to end */
 }
 
-/* "Remove domain from allowlist" buttons */
+/* "Remove domain" buttons */
 #allowedDomainsTableContents .controls-cell button {
     background: color-mix(in oklab, var(--background) 85%, var(--foreground));;
     border: none;
