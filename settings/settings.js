@@ -52,8 +52,8 @@ function allowed_domain_row(domain, abort_signal) {
 }
 
 let remove_buttons_event_controller;
-const table_body = document.getElementById("allowedDomainsTableContents");
-const table = document.getElementById("allowedDomainsTable");
+const table_body = document.getElementById("allowlist_table_contents");
+const table = document.getElementById("allowlist_table");
 async function load_allowed_domains() {
     // Remove all of the stale listeners
     // TODO figure out if this is needed, unsure since calling `replaceChildren` could do listener cleanup on the deleted children

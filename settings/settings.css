@@ -7,12 +7,12 @@ input::placeholder {
 }
 
 /* Allowlist table (mainly relies on common styles in '../global/common.css') */
-#allowedDomainsTableContents .controls-cell {
+#allowlist_table_contents .controls-cell {
     width: 0; /* TODO find a better way to indicate column should be shrink-wrapped to end */
 }
 
 /* "Remove domain" buttons */
-#allowedDomainsTableContents .controls-cell button {
+#allowlist_table_contents .controls-cell button {
     background: color-mix(in oklab, var(--background) 85%, var(--foreground));;
     border: none;
     border-radius: 3em;
@@ -20,7 +20,7 @@ input::placeholder {
     height: 1.5em;
     cursor: pointer;
 }
-#allowedDomainsTableContents .controls-cell button:hover {
+#allowlist_table_contents .controls-cell button:hover {
     background-color: color-mix(in oklab, var(--red) 50%, red);
     color: var(--background);
 }

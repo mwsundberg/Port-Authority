@@ -94,7 +94,7 @@ function buildBlockedPortsRow(host, ports) {
 
     //////// Multiple ports: see JSDoc for full structure
     // Side-effect: pluralize the ports header
-    document.querySelector("#blocked-ports .ports-header-cell").innerText = "Ports";
+    document.querySelector("#blocked_ports .ports-header-cell").innerText = "Ports";
 
     // Good to have low-number privileged ports first
     ports.sort((a, b)=>(+a - +b));
@@ -132,8 +132,8 @@ function buildBlockedPortsRow(host, ports) {
     return row;
 }
 
-// Populate `#blocked-ports` with table rows
-const blockedPortsWrapper = document.getElementById("blocked-ports");
+// Populate `#blocked_ports` with table rows
+const blockedPortsWrapper = document.getElementById("blocked_ports");
 const renderBlockedPorts = renderObjectFactory({
     wrapper: blockedPortsWrapper,
     destination: blockedPortsWrapper.querySelector(".dropzone"),
@@ -141,8 +141,8 @@ const renderBlockedPorts = renderObjectFactory({
     renderItem: buildBlockedPortsRow
 });
 
-// Populate `#blocked-hosts` with rows of `<tr><td>{host}</td></tr>`
-const blockedHostsWrapper = document.getElementById("blocked-hosts");
+// Populate `#blocked_hosts` with rows of `<tr><td>{host}</td></tr>`
+const blockedHostsWrapper = document.getElementById("blocked_hosts");
 const renderBlockedHosts = renderArrayFactory({
     wrapper: blockedHostsWrapper,
     destination: blockedHostsWrapper.querySelector('.dropzone'),
