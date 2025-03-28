@@ -35,7 +35,7 @@
     height: var(--height);
     width: var(--width);
     margin-inline-end: 8px;
-    background-color: color-mix(in oklab, var(--background) 75%, var(--foreground));
+    background-color: oklch(from var(--foreground) l c h / 25%);
 
     transition: background-color .4s;
 }

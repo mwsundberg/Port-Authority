@@ -72,7 +72,7 @@ main {
 /* All ports should be prefixed with a faint unselectable ':' */
 .port::before {
     content: ':';
-    color: color-mix(in oklab, var(--foreground) 80%, var(--background));
+    color: oklch(from var(--foreground) l c h / 80%);
 }
 
 
@@ -85,11 +85,11 @@ main {
 /* Put commas between ports when in collapsed view */
 .many-ports .port::after {
     content: ',';
-    color: color-mix(in oklab, var(--foreground) 80%, var(--background));
+    color: oklch(from var(--foreground) l c h / 80%);
 }
 /* Except remove the commas when expanded or the last port in the list */
 .many-ports .port:last-child::after,
-.many-ports .ports-expansion-toggle:has(input:checked) + .ports-expansion-target .port::after {
+.many-ports:has(.ports-expansion-toggle input:checked) .ports-expansion-target .port::after {
     content: '';
 }
 

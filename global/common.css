@@ -88,11 +88,11 @@ tr {
     border: 1px solid color-mix(in oklab, var(--background) 80%, var(--foreground));
 }
 tbody tr:nth-child(odd) {
-    background-color: color-mix(in oklab, var(--background) 95%, var(--foreground));
+    background-color: oklch(from var(--foreground) l c h / 5%);
 }
 tbody tr:hover {
     /* Highlight rows in a color based on the browser's SelectedItem <system-color> */
-    background-color: color-mix(in oklab, var(--background) 70%, SelectedItem);
+    background-color: oklch(from SelectedItem l c h / 30%);
 }
 /* Cells */
 th, td {
