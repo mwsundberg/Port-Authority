@@ -8,7 +8,7 @@ input::placeholder {
 
 /* Allowlist table (mainly relies on common styles in '../global/common.css') */
 #allowlist_table_contents .controls-cell {
-    width: 0; /* TODO find a better way to indicate column should be shrink-wrapped to end */
+    width: 0; /* Indicates column should be as small as possible */
 }
 
 /* "Remove domain" buttons */
