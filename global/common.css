@@ -61,15 +61,6 @@ body {
     align-items: center;
 }
 
-.flex-row-flipped {
-    display: flex;
-    flex-direction: row-reverse;
-}
-
-.align-center {
-    justify-content: center;
-}
-
 .align-right {
     justify-content: flex-end;
 }

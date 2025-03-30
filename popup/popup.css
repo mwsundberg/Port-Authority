@@ -10,7 +10,8 @@ h2 {
 
 /* Header */
 header {
-    padding: min(2rem, 20px) min(5ch, 30px);
+    padding: 20px 30px;
+    justify-content: center;
 }
 
 header img {
