@@ -18,26 +18,28 @@
             Port Authority
         </h1>
     </header>
-    <main class="flex-column">
-        <!-- Settings link -->
-        <nav class="flex-row">
-            <a href="#" id="settings" class="flex-row">
-                Settings
-                <!-- Gear icon is now rendered in `#settings::after` -->
-            </a>
-        </nav>
-        <!-- Config switches -->
-        <label class="flex-row switch">
-            <input type="checkbox" id="blocking_switch">
-            <span class="slider round"></span>
-            Blocking
-        </label>
-        <label class="flex-row switch">
-            <input type="checkbox" id="notifications_switch">
-            <span class="slider round"></span>
-            Notifications
-        </label>
-        <!-- Drop zones for parsed data -->
+    <main>
+        <!-- Settings section -->
+        <section>
+            <nav class="flex-row">
+                <a href="#" id="settings" class="flex-row">
+                    Settings
+                    <!-- Gear icon is now rendered in `#settings::after` -->
+                </a>
+            </nav>
+            <!-- Config switches -->
+            <label class="flex-row switch">
+                <input type="checkbox" id="blocking_switch">
+                <span class="slider round"></span>
+                Blocking
+            </label>
+            <label class="flex-row switch">
+                <input type="checkbox" id="notifications_switch">
+                <span class="slider round"></span>
+                Notifications
+            </label>
+        </section>
+        <!-- Per-tab blocking data sections -->
         <section id="blocked_ports" hidden>
             <h2>Blocked Port Scans</h2>
             <table class="selectable">

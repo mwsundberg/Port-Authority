@@ -21,10 +21,18 @@ header img {
     margin-left: -5px;
 }
 
-/* Main section padding */
+/* Main layout */
+main,
+main > section:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+}
 main {
-    gap: 10px;
+    gap: 1em;
     padding: 10px;
+}
+main > section {
+    gap: 0.5em;
 }
 
 nav {
@@ -63,7 +71,6 @@ nav {
 /* Blocked port scans table styling */
 #blocked_ports table {
     table-layout: fixed;
-    margin-top: 0.5rem;
     /* font-family: ui-monospace, monospace; */
 }
 .host-cell {
