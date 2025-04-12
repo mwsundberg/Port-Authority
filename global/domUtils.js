@@ -5,8 +5,8 @@ import { isObjectEmpty } from "./utils.js";
  * 
  * 
  * @example
- * createElement("button", {class: ["unselectable", "align-right"], "aria-label": "Remove domain"}, ["✕ ", createElement("span", {}, "Remove")]);
- *     // Result: `<button class="unselectable align-right" aria-label="Remove domain">✕ <span>Remove</span></button>`
+ * createElement("button", {class: ["unselectable", "inline"], "aria-label": "Remove domain"}, ["✕ ", createElement("span", {}, "Remove")]);
+ *     // Result: `<button class="unselectable inline" aria-label="Remove domain">✕ <span>Remove</span></button>`
  * 
  * @example
  * // Note if both "className" and "class" are provided only the later-in-the-object value will be used, without warning:

@@ -61,10 +61,6 @@ body {
     align-items: center;
 }
 
-.align-right {
-    justify-content: flex-end;
-}
-
 /* Tables - used in Settings and Popup */
 table {
     border-collapse: collapse;
