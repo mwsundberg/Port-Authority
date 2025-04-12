@@ -19,15 +19,15 @@ import { createElement } from "../global/domUtils.js";
  */
 function allowed_domain_item(domain, abort_signal) {
     /** Added to the remove button's onclick, a closure that uses the `domain` value from `allow_domain_item`'s arguments */
-    const remove_domain = async () => {
-        // Remove the current domain from the list
-        await modifyItemInLocal("allowed_domain_list", [],
+    const remove_domain = () => {
+        // Remove the current domain from the list and refresh the display
+        modifyItemInLocal("allowed_domain_list", [],
             (list) => list.filter(
                 (d) => d !== domain
-            ));
-
-        // Refresh the domain list displayed
-        load_allowed_domains();
+            )).then(
+                /* Reuse the updated value to re-render the display */
+                (list) => load_allowed_domains(list)
+            );
     }
 
     /****Main container:** `<li>` */
@@ -133,7 +133,7 @@ function allowlist_add_form_listener(event) {
             }
         }).then(
             /* Reuse the updated value to re-render the display */
-            (allowed_domain_list) => load_allowed_domains(allowed_domain_list)
+            (list) => load_allowed_domains(list)
         );
 }
 
