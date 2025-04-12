@@ -6,13 +6,8 @@ input::placeholder {
     font-style: italic;
 }
 
-/* Allowlist table (mainly relies on common styles in '../global/common.css') */
-#allowlist_table_contents .controls-cell {
-    width: 0; /* Indicates column should be as small as possible */
-}
-
 /* "Remove domain" buttons */
-#allowlist_table_contents .controls-cell button {
+#allowlist_contents button {
     background: color-mix(in oklab, var(--background) 80%, var(--foreground));
     border: none;
     border-radius: 3em;
@@ -20,10 +15,11 @@ input::placeholder {
     height: 1.5em;
     cursor: pointer;
 
+    margin-left: 1ch;
     padding-top: -2px;
     padding-bottom: 2px;
 }
-#allowlist_table_contents .controls-cell button:hover {
+#allowlist_contents button:hover {
     background-color: var(--red-text);
     color: var(--background);
 }

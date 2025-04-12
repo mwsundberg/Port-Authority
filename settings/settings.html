@@ -14,22 +14,18 @@
 <body class="flex-column">
     
     <form id="allowlist_add_form">
-        <h2>Domain Allowlist</h2>
-        <p>
-            Selectively disable Port Authority on some websites by adding them to the allowlist below.
-            <strong class="warning-text">Make sure you enter a proper domain name.</strong>
-        </p>
+        <p><em class="warning-text">Make sure you enter a proper domain name (discord.com)</em></p>
         <label for="add_domain">Allow new domain: </label>
         <input type="text" id="add_domain" required placeholder="discord.com (example)">
         <button type="submit">Add</button>
     </form>
     
-    <table id="allowlist_table" hidden>
-        <thead><tr><th>Allowed Domains</th></tr></thead>
-        <tbody id="allowlist_table_contents" class="selectable">
+    <section id="allowlist_section" hidden>
+        <strong>Domains Allowed to Bypass PortAuthority Blocking:</strong>
+        <ul id="allowlist_contents" class="selectable">
             <!-- Dynamically Populated -->
-        </tbody>
-    </table>
+        </ul>
+    </section>
     <script type="module" src="./settings.js"></script>
 </body>
 </html>

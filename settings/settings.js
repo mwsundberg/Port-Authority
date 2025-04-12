@@ -2,25 +2,23 @@ import { getItemFromLocal, modifyItemInLocal } from "../global/BrowserStorageMan
 import { createElement } from "../global/domUtils.js";
 
 /**
- * A single row in the allowedlist table
+ * A single item in the allowlist display
  * @param {string} domain Technically a `URL.host` aka domain + port
  * @param {AbortSignal} abort_signal Signal to kill the 'remove' button listeners when rerendering the table
  * @returns {Element}
  * ```html
- * <tr>
- *     <td class="domain-cell">{domain}</td>
- *     <td class="controls-cell">
- *         <button onclick="{remove & refresh display}"
- *                 class="unselectable"
- *                 aria-label="Remove {domain} from allowlist">
- *             ✕
- *         </button>
- *     </td>
- * </tr>
+ * <li>
+ *     <span>{domain}</span>
+ *     <button onclick="{remove & refresh display}"
+ *             class="unselectable"
+ *             aria-label="Remove {domain} from allowlist">
+ *         ✕
+ *     </button>
+ * </li>
  * ```
  */
-function allowed_domain_row(domain, abort_signal) {
-    /** Added to the remove button's onclick, it's a closure that uses the `domain` value from `allow_domain_row`'s arguments */
+function allowed_domain_item(domain, abort_signal) {
+    /** Added to the remove button's onclick, a closure that uses the `domain` value from `allow_domain_item`'s arguments */
     const remove_domain = async () => {
         // Remove the current domain from the list
         await modifyItemInLocal("allowed_domain_list", [],
@@ -32,28 +30,25 @@ function allowed_domain_row(domain, abort_signal) {
         load_allowed_domains();
     }
 
-    /****Main container:** `<tr>` */
-    const row = document.createElement("tr");
+    /****Main container:** `<li>` */
+    const item = document.createElement("li");
 
-    /****Domain cell:** `<td class="domain-cell selectable">{domain}</td>` */
-    const domainCell = createElement("td", {class: "domain-cell"}, domain);
-    row.appendChild(domainCell);
-
-    const controlsCell = createElement("td", {class: "controls-cell"});
+    /****Domain:** `<span>{domain}</span>` */
+    const domainCell = createElement("span", {}, domain);
+    item.appendChild(domainCell);
 
     /****Remove domain button:** `<button class="unselectable" aria-label="Remove {domain} from allowlist">✕</button>`
-     * Note that `.unselectable` is applied to disable the selectable effect applied at the `<tbody>` level. */
+     * Note that `.unselectable` is applied to disable the selectable effect applied at the `<ul>` level. */
     const removeButton = createElement("button", {class: "unselectable", "aria-label": `Remove '${domain}' from allowlist`}, "✕");
     removeButton.addEventListener("click", remove_domain, {signal: abort_signal}); // By triggering `remove_buttons_event_controller.abort()`, all buttons with this signal passed will have their listeners removed
-    controlsCell.appendChild(removeButton);
-    row.appendChild(controlsCell);
+    item.appendChild(removeButton);
 
-    return row;
+    return item;
 }
 
 let remove_buttons_event_controller;
-const table_body = document.getElementById("allowlist_table_contents");
-const table = document.getElementById("allowlist_table");
+const list_contents = document.getElementById("allowlist_contents");
+const allowlist_section = document.getElementById("allowlist_section");
 async function load_allowed_domains() {
     // Remove all of the stale listeners
     // TODO figure out if this is needed, unsure since calling `replaceChildren` could do listener cleanup on the deleted children
@@ -69,23 +64,23 @@ async function load_allowed_domains() {
     );
 
     // Clear stale contents, if any
-    table_body.replaceChildren();
+    list_contents.replaceChildren();
 
     // Early return, hiding wrapper if no data provided
     if(allowed_domain_list?.length === 0) {
-        table.setAttribute("hidden", "");
+        allowlist_section.setAttribute("hidden", "");
         return;
     }
 
-    // Populate the table rows
+    // Populate the list items
     for(const domain of allowed_domain_list) {
-        const new_row = allowed_domain_row(domain, remove_buttons_event_controller.signal);
+        const new_row = allowed_domain_item(domain, remove_buttons_event_controller.signal);
 
-        table_body.appendChild(new_row);
+        list_contents.appendChild(new_row);
     };
 
     // Toggle visibility on the container wrapper at end
-    table.removeAttribute("hidden");
+    allowlist_section.removeAttribute("hidden");
 }
 
 /**
