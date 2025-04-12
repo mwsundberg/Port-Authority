@@ -8,7 +8,7 @@ import { createElement } from "../global/domUtils.js";
  * @returns {Element}
  * ```html
  * <li>
- *     <span>{domain}</span>
+ *     {domain}
  *     <button onclick="{remove & refresh display}"
  *             class="unselectable"
  *             aria-label="Remove {domain} from allowlist">
@@ -18,9 +18,8 @@ import { createElement } from "../global/domUtils.js";
  * ```
  */
 function allowed_domain_item(domain, abort_signal) {
-    /** Added to the remove button's onclick, a closure that uses the `domain` value from `allow_domain_item`'s arguments */
-    const remove_domain = () => {
-        // Remove the current domain from the list and refresh the display
+    /** The listener for the "Remove domain" button's onclick. Removes the current domain from the list and refreshes the display */
+    const remove_domain_listener = () => {
         modifyItemInLocal("allowed_domain_list", [],
             (list) => list.filter(
                 (d) => d !== domain
@@ -30,18 +29,13 @@ function allowed_domain_item(domain, abort_signal) {
             );
     }
 
-    /****Main container:** `<li>` */
-    const item = document.createElement("li");
+    // Main container, the domain is inserted as plain text
+    const item = createElement("li", {}, domain);
 
-    /****Domain:** `<span>{domain}</span>` */
-    const domainCell = createElement("span", {}, domain);
-    item.appendChild(domainCell);
-
-    /****Remove domain button:** `<button class="unselectable" aria-label="Remove {domain} from allowlist">✕</button>`
-     * Note that `.unselectable` is applied to disable the selectable effect applied at the `<ul>` level. */
-    const removeButton = createElement("button", {class: "unselectable", "aria-label": `Remove '${domain}' from allowlist`}, "✕");
-    removeButton.addEventListener("click", remove_domain, {signal: abort_signal}); // By triggering `remove_buttons_event_controller.abort()`, all buttons with this signal passed will have their listeners removed
-    item.appendChild(removeButton);
+    // Button to remove the domain from the allowlist
+    const remove_button = createElement("button", {class: "unselectable", "aria-label": `Remove '${domain}' from allowlist`}, "✕");
+    remove_button.addEventListener("click", remove_domain_listener, {signal: abort_signal}); // By triggering `remove_buttons_event_controller.abort()`, all buttons with this signal passed will have their listeners removed
+    item.appendChild(remove_button);
 
     return item;
 }
