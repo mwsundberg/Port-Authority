@@ -49,7 +49,7 @@ function allowed_domain_item(domain, abort_signal) {
 let remove_buttons_event_controller;
 const list_contents = document.getElementById("allowlist_contents");
 const allowlist_section = document.getElementById("allowlist_section");
-async function load_allowed_domains() {
+async function load_allowed_domains(allowed_domain_list) {
     // Remove all of the stale listeners
     // TODO figure out if this is needed, unsure since calling `replaceChildren` could do listener cleanup on the deleted children
     // If it's removable can replace this all with a `renderArrayFactory`
@@ -58,7 +58,8 @@ async function load_allowed_domains() {
     // Make a new AbortController for all of the fresh buttons
     remove_buttons_event_controller = new AbortController();
 
-    const allowed_domain_list = await getItemFromLocal(
+    // If not provided, fetch the allowed domain list from storage
+    allowed_domain_list ??= await getItemFromLocal(
         "allowed_domain_list",
         []
     );
@@ -91,6 +92,9 @@ async function load_allowed_domains() {
  * @throws Parsing an invalid URL
  */
 function extractURLHost(url) {
+    // Leading/trailing whitespace removal
+    url = url.trim();
+
     // We don't actually care about the protocol as we only compare url.host
     // But the URL object will fail to create if no protocol is provided
     if (!url.match(/^\w*:\/\//)) {
@@ -100,20 +104,25 @@ function extractURLHost(url) {
     return newUrl.host;
 }
 
-async function saveOptions(e) {
-    let url;
+function allowlist_add_form_listener(event) {
+    // Prevent the form submit event from reloading the page and hiding `alert`s used for feedback
+    event.preventDefault();
+
+    const form_url = document.getElementById("add_domain");
+    let url = form_url.value;
     try {
-        url = extractURLHost(e.target[0].value);
+        url = extractURLHost(url);
     } catch(error) {
-        console.error(error);
+        console.warn("Error parsing a domain to add to the allowlist:", {url, error});
         alert("Please enter a valid domain.");
         return;
     }
-    // Clear the URL box since no longer clearing by reloading on form submit
-    document.getElementById("add_domain").value = "";
+    
+    // Clear the URL input box
+    form_url.value = "";
 
-
-    await modifyItemInLocal("allowed_domain_list", [],
+    // Update and rerender the list
+    modifyItemInLocal("allowed_domain_list", [],
         (list) => {
             // Only update the list if it's a new member
             if (!list.includes(url)) {
@@ -122,14 +131,11 @@ async function saveOptions(e) {
                 alert("This domain is already in the list.");
                 return list;
             }
-        });
-
-    // Rerender the table since no longer relying on the form submitting to reload the page
-    load_allowed_domains();
-
-    // Prevent the form submit event from reloading the page and hiding `alert`s used for feedback
-    e.preventDefault();
+        }).then(
+            /* Reuse the updated value to re-render the display */
+            (allowed_domain_list) => load_allowed_domains(allowed_domain_list)
+        );
 }
 
 load_allowed_domains();
-document.getElementById("allowlist_add_form").addEventListener("submit", saveOptions);
+document.getElementById("allowlist_add_form").addEventListener("submit", allowlist_add_form_listener);
