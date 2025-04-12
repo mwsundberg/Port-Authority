@@ -22,29 +22,26 @@ header img {
 }
 
 /* Main layout */
-main,
-main > section:not([hidden]) {
-    display: flex;
-    flex-direction: column;
-}
 main {
-    gap: 1em;
+    gap: 0.5rem;
     padding: 10px;
 }
-main > section {
-    gap: 0.5em;
+
+/* Headings should be slightly smaller */
+h2 {
+    font-size: 1.25rem;
 }
 
-nav {
-    justify-content: right;
+/* Settings switches need vertical padding when displayed on two rows */
+.switch {
+    padding-top: 0.4em;
 }
 
 /* Options link */
 #settings {
-    font-weight: bold;
-    font-size: 1.25rem;
-
-    /* <a> resets */
+    float: right;
+    
+    /* `<a>` resets */
     text-decoration: none;
     color: var(--foreground);
 }
@@ -54,11 +51,10 @@ nav {
 /* Adding the gear icon in a way that is easy to recolor */
 #settings::after {
     content: '';
-
-    margin-left: 2.5px;
-    margin-bottom: -5px;
-    height: 24px;
-    width: 24px;
+    
+    display: block;
+    height: 1.5rem;
+    width: 1.5rem;
 
     /* `currentColor` matches the `color` property's value */
     background-color: currentColor;
@@ -92,11 +88,10 @@ nav {
 
 /* Expand the ports list when the toggle is enabled */
 .ports-expansion-target {
-    height: 0;
-    overflow: hidden;
+    display: none;
 }
 .ports-expansion-toggle:has(input:checked) + .ports-expansion-target {
-    height: auto;
+    display: block;
 }
 
 
