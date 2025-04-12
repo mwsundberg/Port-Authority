@@ -4,6 +4,7 @@
     --background: var(--light);
     --foreground: var(--dark);
     --red: #800000;
+    --red-text: var(--red);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -14,6 +15,7 @@
         --background: var(--dark);
         --foreground: var(--light);
         --red: #B20000; /* Slightly brighter for better contrast against `--background` */
+        --red-text: color-mix(in oklab, var(--red) 50%, red);
     }
 }
 
@@ -36,7 +38,7 @@ body {
     color: var(--background);
 }
 .warning-text {
-    color: color-mix(in oklab, var(--red) 50%, red);
+    color: var(--red-text);
 }
 
 /* Want to default disallow text selection for things like options labels but selectively enable it for copyable data like banned IPs or the allowlist */

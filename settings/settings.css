@@ -24,6 +24,6 @@ input::placeholder {
     padding-bottom: 2px;
 }
 #allowlist_table_contents .controls-cell button:hover {
-    background-color: color-mix(in oklab, var(--red) 50%, red);
+    background-color: var(--red-text);
     color: var(--background);
 }

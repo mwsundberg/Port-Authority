@@ -79,7 +79,7 @@ h2 {
 /* The "View Ports" toggle */
 .ports-expansion-toggle {
     cursor: pointer;
-    color: var(--red);
+    color: var(--red-text);
     float: right;
 }
 .ports-expansion-toggle input {
@@ -102,6 +102,6 @@ h2 {
     padding-left: 10px;
 }
 #blocked_hosts li {
-    color: var(--red);
+    color: var(--red-text);
     font-weight: bold;
 }
