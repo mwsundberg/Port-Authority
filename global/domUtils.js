@@ -3,20 +3,17 @@ import { isObjectEmpty } from "./utils.js";
 /**
  * Slightly fancier `document.createElement` that accepts attributes and children
  * 
- * 
  * @example
  * createElement("button", {class: ["unselectable", "warning-text"], "aria-label": "Remove domain"}, ["✕ ", createElement("span", {}, "Remove")]);
  *     // Result: `<button class="unselectable warning-text" aria-label="Remove domain">✕ <span>Remove</span></button>`
- * 
  * @example
  * // Note if both "className" and "class" are provided only the later-in-the-object value will be used, without warning:
  * createElement("div", {class: ["one", "two"], className: "three"});
  *     // Result: `<div class="three"></div>`
- * 
  * @example
  * // No whitespace is inserted between children:
- * createElement("span", {}, ["no", "spaces"]);
- *     // Result: `<span>nospaces</span>`
+ * createElement("span", {}, ["no", "spaces", createElement("em", {}, "added")]);
+ *     // Result: `<span>nospaces<em>added</em></span>`
  * @param {string} tag The HTML tag to use
  * @param {Record<string, string|string[]>} [props] Attributes to set on the element. Classes can be passed in either `className` or `class`. Arrays will be space separated
  * @param {(Node|string) | (Node|string)[]} [contents] Both `Element`s and strings supported. Using type `Node` to also accept text nodes made with `createTextNode`
@@ -25,7 +22,6 @@ import { isObjectEmpty } from "./utils.js";
 export function createElement(tag, props, contents) {
     const el = document.createElement(tag);
 
-    // Attributes, if provided
     if(props) {
         for(let p in props) {
             // Value stringification
@@ -39,9 +35,8 @@ export function createElement(tag, props, contents) {
         }
     }
 
-    // Contents, if provided
     if(contents) {
-        // Prevent strings from being split by the spread operator
+        // Standardize format for spread operator
         const contentsArray = Array.isArray(contents)? contents : [contents];
         el.replaceChildren(...contentsArray);
     }
@@ -118,7 +113,7 @@ export function renderObjectFactory({
         // Populate the data container in DOM
         for (const key in data) {
             const rendered = renderItem(key, data[key]);
-            // Prevent strings from being split by the spread operator
+            // Standardize format for spread operator
             const renderedArray = Array.isArray(rendered)? rendered : [rendered];
 
             // Using `.append` to also accept strings
