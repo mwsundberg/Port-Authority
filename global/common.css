@@ -45,12 +45,8 @@ body {
 .selectable {
     user-select: text;
 }
-.selectable .unselectable {
+.unselectable {
     user-select: none;
-}
-
-.inline {
-    display: inline;
 }
 
 /* Flex-based layout helpers*/
