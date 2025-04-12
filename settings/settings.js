@@ -85,14 +85,12 @@ async function load_allowed_domains() {
 
 /**
  * Get a well-formed host to match against from an user-supplied URL
- * @param {string} text A URL-like value (eg `https://example.com/file/path/etc`, `discord.com/invite/abcdefg`, `example.com:8080`)
+ * @param {string} url A URL-like value (eg `https://example.com/file/path/etc`, `discord.com/invite/abcdefg`, `example.com:8080`)
  * @returns {string} Well formatted host portion of url (eg `example.com`, `discord.com`, `example.com:8080`)
  * 
  * @throws Parsing an invalid URL
  */
-function extractURLHost(text) {
-    let url = text + ""; // cast to string (is this needed?)
-
+function extractURLHost(url) {
     // We don't actually care about the protocol as we only compare url.host
     // But the URL object will fail to create if no protocol is provided
     if (!url.match(/^\w*:\/\//)) {
@@ -103,9 +101,6 @@ function extractURLHost(text) {
 }
 
 async function saveOptions(e) {
-    // Prevent the form submit event from reloading the page and hiding `alert`s used for feedback
-    e.preventDefault();
-
     let url;
     try {
         url = extractURLHost(e.target[0].value);
@@ -131,6 +126,9 @@ async function saveOptions(e) {
 
     // Rerender the table since no longer relying on the form submitting to reload the page
     load_allowed_domains();
+
+    // Prevent the form submit event from reloading the page and hiding `alert`s used for feedback
+    e.preventDefault();
 }
 
 load_allowed_domains();
