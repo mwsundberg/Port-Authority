@@ -129,3 +129,14 @@ nav {
 .ports-expansion-toggle input {
     display: none;
 }
+
+/* Blocked tracking scripts list styling */
+#blocked_hosts ul {
+    list-style-type: none;
+    margin: 0;
+    padding-left: 10px;
+}
+#blocked_hosts li {
+    color: var(--red);
+    font-weight: bold;
+}

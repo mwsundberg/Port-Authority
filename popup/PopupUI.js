@@ -141,13 +141,13 @@ const renderBlockedPorts = renderObjectFactory({
     renderItem: buildBlockedPortsRow
 });
 
-// Populate `#blocked_hosts` with rows of `<tr><td>{host}</td></tr>`
+// Populate `#blocked_hosts` with rows of `<li>{host}</li>`
 const blockedHostsWrapper = document.getElementById("blocked_hosts");
 const renderBlockedHosts = renderArrayFactory({
     wrapper: blockedHostsWrapper,
     destination: blockedHostsWrapper.querySelector('.dropzone'),
     fetchData: ()=>fetchBlockingDataForCurrentTab("blocked_hosts"),
-    renderItem: (host)=>createElement("tr", {}, createElement("td", {}, host))
+    renderItem: (host)=>createElement("li", {}, host)
 });
 
 // TODO live rerendering on data change, could use storage event coordinating as discussed in issue #50: https://github.com/ACK-J/Port_Authority/issues/50
