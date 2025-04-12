@@ -68,67 +68,37 @@ nav {
     mask-size: 100%;
 }
 
-/* Blocked port scans table styling */
-#blocked_ports table {
-    table-layout: fixed;
-    /* font-family: ui-monospace, monospace; */
-}
-.host-cell {
-    min-width: 15ch;
-    width: fit-content;
-}
-.ports-cell {
-    max-width: 8ch;
+/* Blocked port list styling */
+#blocked_ports ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0 10px;
 }
 
-/* All ports should be prefixed with a faint unselectable ':' */
-.port::before {
-    content: ':';
-    color: oklch(from var(--foreground) l c h / 80%);
+/* The host text display */
+#blocked_ports .host {
+    font-weight: bold;
 }
 
-
-/* Multiple ports - Want the list to be collapsed to one line by default, expanding to multiple on toggle click */
-.many-ports {
-    width: 100%;
-    display: inline flex;
-    justify-content: space-between;
-}
-/* Put commas between ports when in collapsed view */
-.many-ports .port::after {
-    content: ',';
-    color: oklch(from var(--foreground) l c h / 80%);
-}
-/* Except remove the commas when expanded or the last port in the list */
-.many-ports .port:last-child::after,
-.many-ports:has(.ports-expansion-toggle input:checked) .ports-expansion-target .port::after {
-    content: '';
-}
-
-/* Unexpanded ports list overflow is hidden with a `...` */
-.ports-expansion-target {
-    flex-shrink: 1;
-    overflow-x: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-/* Put each port on its own line when expanded */
-.many-ports:has(.ports-expansion-toggle input:checked) .ports-expansion-target .port {
-    display: block;
-}
-
-/* The expansion toggle button is '➕︎' or '➖︎' and the actual checkbox is hidden */
-.ports-expansion-toggle::after {
+/* The "View Ports" toggle */
+.ports-expansion-toggle {
     cursor: pointer;
-    content: '➕︎';
-}
-.ports-expansion-toggle:has(input:checked)::after {
-    content: '➖︎';
+    color: var(--red);
+    float: right;
 }
 .ports-expansion-toggle input {
     display: none;
 }
+
+/* Expand the ports list when the toggle is enabled */
+.ports-expansion-target {
+    height: 0;
+    overflow: hidden;
+}
+.ports-expansion-toggle:has(input:checked) + .ports-expansion-target {
+    height: auto;
+}
+
 
 /* Blocked tracking scripts list styling */
 #blocked_hosts ul {
